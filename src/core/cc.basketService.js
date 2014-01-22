@@ -15,7 +15,9 @@ cc.define('cc.BasketService', function(storageService, configService, options){
     var self = {},
         storePrefix = 'basketService_',
         storeItemsName = storePrefix + 'items',
+        storeCouponsName = storePrefix + 'coupons',
         items = sanitizeSavedData(storageService.get(storeItemsName)) || [],
+        activeCoupons = sanitizeSavedData(storageService.get(storeCouponsName)) || [],
         productIdentityFn = options && cc.Util.isFunction(options.productIdentityFn) ?
             options.productIdentityFn : function(productA, productAVariant,
                                                  productB, productBVariant){
@@ -62,6 +64,7 @@ cc.define('cc.BasketService', function(storageService, configService, options){
 
     var writeToStore = function(){
         storageService.set(storeItemsName, items);
+        storageService.set(storeCouponsName, activeCoupons);
     };
 
     writeToStore();
@@ -106,6 +109,70 @@ cc.define('cc.BasketService', function(storageService, configService, options){
         self.emit('itemAdded', self, basketItem);
 
         return basketItem;
+    };
+
+    /**
+     * @method addCoupon
+     * @memberof cc.BasketService
+     *
+     * @description
+     * Adds a coupon to the basket.
+     *
+     * @example
+     * basketService.addCoupon(couponData);
+     *
+     * @param {object} couponData An object which contains coupon metadata such as name, amount and description.
+     */
+    self.addCoupon = function(couponData){
+        var foundCoupon = cc.Util.find(activeCoupons, function(activeCoupon) {
+            return activeCoupon.code === couponData.code;
+        });
+
+        if ( !foundCoupon ) {
+            activeCoupons.push(couponData);
+            writeToStore();
+
+            self.emit('couponAdded', self, couponData);
+        }
+    };
+
+    /**
+     * @method removeCoupon
+     * @memberof cc.BasketService
+     *
+     * @description
+     * Removes a coupon which is currently active in the basket.
+     *
+     * @example
+     * basketService.removeCoupon(couponCode);
+     *
+     * @param {object} couponCode The code of the coupon to remove
+     */
+    self.removeCoupon = function(couponCode){
+        var couponToBeRemoved = cc.Util.find(activeCoupons, function(activeCoupon) {
+            return activeCoupon.code === couponCode;
+        });
+        cc.Util.Array.remove(activeCoupons, couponToBeRemoved);
+
+        writeToStore();
+
+        self.emit('couponRemoved', self, couponToBeRemoved);
+    };
+
+    /**
+     * @method getActiveCoupons
+     * @memberof cc.BasketService
+     *
+     * @description
+     * Gets the coupons which are currently active in the basket.
+     *
+     * @example
+     * basketService.getActiveCoupons();
+     *
+     * @return {object} basketItem An array of objects that contain coupon data
+     */
+    self.getActiveCoupons = function(couponData){
+        return activeCoupons;
     };
 
     /**
@@ -286,10 +353,35 @@ cc.define('cc.BasketService', function(storageService, configService, options){
     self.clear = function(){
 
         items.length = 0;
+        activeCoupons.length = 0;
 
         writeToStore();
 
         self.emit('cleared', self);
+
+        //return self for chaining
+        return self;
+    };
+
+    /**
+     * @method clearCoupons
+     * @memberof cc.BasketService
+     *
+     * @description
+     * Removes all active coupons from the basket.
+     *
+     * @example
+     * basketService.clearCoupons();
+     *
+     * @return {object} BasketService instance for method chaining.
+     */
+    self.clearCoupons = function(){
+
+        activeCoupons.length = 0;
+
+        writeToStore();
+
+        self.emit('clearedCoupons', self);
 
         //return self for chaining
         return self;
@@ -399,6 +491,11 @@ cc.define('cc.BasketService', function(storageService, configService, options){
         }
 
         total += surcharge;
+
+        // For each coupon, subtract the discount value
+        activeCoupons.forEach(function (coupon) {
+            total -= parseFloat(coupon.amount);
+        });
 
         vat += parseFloat(Math.round((shipping * shippingTax / (100 + shippingTax) ) * 100) / 100);
 

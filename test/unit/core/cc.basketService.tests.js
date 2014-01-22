@@ -50,7 +50,7 @@ test('trying to add an item that is out of stock raises exception', function() {
     product.name = 'Testproduct';
     product.id = 10;
     product.qty = 0;
-    
+
     throws(function(){
         var basketItem = basketService.addItem(product, 1);
     }, Error);
@@ -80,7 +80,7 @@ test('removing the last item removes the whole basket item', function() {
         summary = basketService.getSummary();
         ok(summary.quantity === 0, 'has zero items');
         ok(basketService.getItems().length === 0, 'has zero items');
-        itemRemovedCalled++; 
+        itemRemovedCalled++;
     });
 
     basketService.decreaseOne(basketItem);
@@ -271,14 +271,14 @@ test('does not cumulate same products with different variantIds', function() {
 
     ok(basketService.exists(product, variant1), 'product exists');
     ok(basketService.exists(product, variant2), 'product exists');
-    
+
     ok(basketItem.product === product, 'retrieved product from basketItem');
     ok(basketItem2.product === product, 'retrieved product from basketItem2');
 
     ok(basketItem !== basketItem2, 'baksetItems are different');
     ok(basketItem.quantity === 1, 'has a quantity of one');
     ok(basketItem2.quantity === 1, 'has a quantity of one');
-    
+
     ok(basketService.getItems().length === 2, 'has two items');
 });
 
@@ -326,7 +326,7 @@ test('cumulates same products with identical optionIds', function() {
 
     ok(basketItem === basketItem2, 'baksetItems are identical');
     ok(basketItem.quantity === 2, 'has a quantity of two');
-    
+
     ok(basketService.getItems().length === 1, 'has one item');
 });
 
@@ -359,17 +359,17 @@ test('does not cumulate same products with different optionIds', function() {
 
     ok(basketService.exists(product, variant1), 'product exists');
     ok(basketService.exists(product, variant2), 'product exists');
-    
+
     ok(basketItem.product === product, 'retrieved product from basketItem');
     ok(basketItem.variant === variant1, 'has correct variant set');
-    
+
     ok(basketItem2.product === product, 'retrieved product from basketItem2');
     ok(basketItem2.variant === variant2, 'has correct variant set');
 
     ok(basketItem !== basketItem2, 'baksetItems are different');
     ok(basketItem.quantity === 1, 'has a quantity of one');
     ok(basketItem2.quantity === 1, 'has a quantity of one');
-    
+
     ok(basketService.getItems().length === 2, 'has two items');
 });
 
@@ -589,4 +589,78 @@ test('calculates summary', function() {
     ok(summary.shipping === 2.90, 'uses passed shippingMethod for shipping costs');
     ok(summary.vat === 5.25, 'calculates VAT correctly');
     ok(summary.total === 35.89, 'calculates total correctly');
+});
+
+
+test('can add and remove coupons', function() {
+    var basketService = createBasketService();
+    basketService.clear();
+
+    basketService.addCoupon({
+        amount: 0,
+        code: 'TENEURO',
+        description: '10 EURO',
+        error: null,
+        freeShipping: '0',
+        name: '10 EURO',
+        sortOrder: '0',
+        type: 'fix'
+    });
+
+    var coupons = basketService.getActiveCoupons();
+
+    ok(coupons.length, 'contains coupons');
+    ok(coupons[0].code === 'TENEURO');
+
+    basketService.removeCoupon('TENEURO');
+
+    coupons = basketService.getActiveCoupons();
+
+    ok(!coupons.length, 'contains no coupons');
+});
+
+test('cannot add the same coupon twice', function() {
+    var basketService = createBasketService();
+    basketService.clear();
+
+    for (var i = 0; i < 2; i++) {
+        basketService.addCoupon({
+            amount: 0,
+            code: 'TENEURO',
+            description: '10 EURO',
+            error: null,
+            freeShipping: '0',
+            name: '10 EURO',
+            sortOrder: '0',
+            type: 'fix'
+        });
+    }
+
+    var coupons = basketService.getActiveCoupons();
+
+    ok(coupons.length === 1, 'contains 1 coupon');
+});
+
+test('can clear all coupons', function() {
+    var basketService = createBasketService();
+    basketService.clear();
+
+    for (var i = 0; i < 2; i++) {
+        basketService.addCoupon({
+            amount: 0,
+            code: 'TENEURO',
+            description: '10 EURO',
+            error: null,
+            freeShipping: '0',
+            name: '10 EURO',
+            sortOrder: '0',
+            type: 'fix'
+        });
+    }
+
+    basketService.clear();
+
+    var coupons = basketService.getActiveCoupons();
+
+    ok(coupons.length === 0, 'contains no coupons');
 });

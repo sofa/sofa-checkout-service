@@ -2612,7 +2612,9 @@ cc.define('cc.BasketService', function(storageService, configService, options){
     var self = {},
         storePrefix = 'basketService_',
         storeItemsName = storePrefix + 'items',
+        storeCouponsName = storePrefix + 'coupons',
         items = sanitizeSavedData(storageService.get(storeItemsName)) || [],
+        activeCoupons = sanitizeSavedData(storageService.get(storeCouponsName)) || [],
         productIdentityFn = options && cc.Util.isFunction(options.productIdentityFn) ?
             options.productIdentityFn : function(productA, productAVariant,
                                                  productB, productBVariant){
@@ -2659,6 +2661,7 @@ cc.define('cc.BasketService', function(storageService, configService, options){
 
     var writeToStore = function(){
         storageService.set(storeItemsName, items);
+        storageService.set(storeCouponsName, activeCoupons);
     };
 
     writeToStore();
@@ -2703,6 +2706,70 @@ cc.define('cc.BasketService', function(storageService, configService, options){
         self.emit('itemAdded', self, basketItem);
 
         return basketItem;
+    };
+
+    /**
+     * @method addCoupon
+     * @memberof cc.BasketService
+     *
+     * @description
+     * Adds a coupon to the basket.
+     *
+     * @example
+     * basketService.addCoupon(couponData);
+     *
+     * @param {object} couponData An object which contains coupon metadata such as name, amount and description.
+     */
+    self.addCoupon = function(couponData){
+        var foundCoupon = cc.Util.find(activeCoupons, function(activeCoupon) {
+            return activeCoupon.code === couponData.code;
+        });
+
+        if ( !foundCoupon ) {
+            activeCoupons.push(couponData);
+            writeToStore();
+
+            self.emit('couponAdded', self, couponData);
+        }
+    };
+
+    /**
+     * @method removeCoupon
+     * @memberof cc.BasketService
+     *
+     * @description
+     * Removes a coupon which is currently active in the basket.
+     *
+     * @example
+     * basketService.removeCoupon(couponCode);
+     *
+     * @param {object} couponCode The code of the coupon to remove
+     */
+    self.removeCoupon = function(couponCode){
+        var couponToBeRemoved = cc.Util.find(activeCoupons, function(activeCoupon) {
+            return activeCoupon.code === couponCode;
+        });
+        cc.Util.Array.remove(activeCoupons, couponToBeRemoved);
+
+        writeToStore();
+
+        self.emit('couponRemoved', self, couponToBeRemoved);
+    };
+
+    /**
+     * @method getActiveCoupons
+     * @memberof cc.BasketService
+     *
+     * @description
+     * Gets the coupons which are currently active in the basket.
+     *
+     * @example
+     * basketService.getActiveCoupons();
+     *
+     * @return {object} basketItem An array of objects that contain coupon data
+     */
+    self.getActiveCoupons = function(couponData){
+        return activeCoupons;
     };
 
     /**
@@ -2883,10 +2950,35 @@ cc.define('cc.BasketService', function(storageService, configService, options){
     self.clear = function(){
 
         items.length = 0;
+        activeCoupons.length = 0;
 
         writeToStore();
 
         self.emit('cleared', self);
+
+        //return self for chaining
+        return self;
+    };
+
+    /**
+     * @method clearCoupons
+     * @memberof cc.BasketService
+     *
+     * @description
+     * Removes all active coupons from the basket.
+     *
+     * @example
+     * basketService.clearCoupons();
+     *
+     * @return {object} BasketService instance for method chaining.
+     */
+    self.clearCoupons = function(){
+
+        activeCoupons.length = 0;
+
+        writeToStore();
+
+        self.emit('clearedCoupons', self);
 
         //return self for chaining
         return self;
@@ -2997,6 +3089,11 @@ cc.define('cc.BasketService', function(storageService, configService, options){
 
         total += surcharge;
 
+        // For each coupon, subtract the discount value
+        activeCoupons.forEach(function (coupon) {
+            total -= parseFloat(coupon.amount);
+        });
+
         vat += parseFloat(Math.round((shipping * shippingTax / (100 + shippingTax) ) * 100) / 100);
 
         var summary = {
@@ -3049,7 +3146,7 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
     //allow this service to raise events
     cc.observable.mixin(self);
 
-    var createQuoteData = function(){
+    self.createQuoteData = function(){
 
         var data = basketService
                     .getItems()
@@ -3097,7 +3194,12 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
             requestModel.shippingMethod = modelCopy.selectedShippingMethod.method;
         }
 
-        requestModel.quote = JSON.stringify(createQuoteData());
+        requestModel.quote = JSON.stringify(self.createQuoteData());
+
+        var coupons = basketService.getActiveCoupons().map(function(coupon) {
+            return coupon.code;
+        });
+        requestModel.coupons = JSON.stringify(coupons);
 
         return requestModel;
     };
@@ -3811,6 +3913,96 @@ cc.define('cc.CouchService', function($http, $q, configService){
             categoryMap.addCategory(category);
         });
     };
+
+    return self;
+});
+
+/**
+ * @name CouponService
+ * @namespace cc.CouponService
+ *
+ * @description
+ * A service that allows you to validate coupon codes against the backend.
+ */
+cc.define('cc.CouponService', function($http, $q, basketService, checkoutService, loggingService, configService) {
+
+    'use strict';
+
+    var self = {};
+
+    var FORM_DATA_HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'},
+        CHECKOUT_URL      = configService.get('checkoutUrl'),
+        FULL_CHECKOUT_URL = CHECKOUT_URL + 'coupon.php';
+
+    /**
+     * @method submitCode
+     * @memberof cc.CouponService
+     *
+     * @description
+     * Validates a coupon code against the backend.
+     *
+     * @example
+     * couponService.submitCode(couponCode);
+     *
+     * @param {object} couponCode The code of the coupon to validate
+     */
+    self.submitCode = function(couponCode) {
+
+        if ( !couponCode ) {
+            return $q.reject(new Error('No couponCode given!'));
+        }
+
+        var couponModel = {
+            task: 'INFO',
+            coupon: couponCode,
+            quote: JSON.stringify(checkoutService.createQuoteData())
+        };
+
+        return $http({
+            method: 'POST',
+            url: FULL_CHECKOUT_URL,
+            headers: FORM_DATA_HEADERS,
+            transformRequest: cc.Util.toFormData,
+            data: couponModel
+        })
+        .then(function(response){
+            if ( response.data.error ) {
+                return $q.reject(response.data.error);
+            }
+            basketService.addCoupon(response.data);
+            return response.data;
+        }, function(fail){
+            loggingService.error([
+                '[CouponService: submitCode]',
+                '[Request Data]',
+                couponModel,
+                '[Service answer]',
+                fail
+            ]);
+            return $q.reject(fail);
+        });
+    };
+
+    // When the cart changes, refresh the values of the coupons
+    // by sending them to the backend along with the new cart
+    var updateCoupons = function () {
+        var activeCoupons = basketService.getActiveCoupons();
+
+        var oldCouponCodes = activeCoupons.map(function(activeCoupon) {
+            return activeCoupon.code;
+        });
+
+        basketService.clearCoupons();
+
+        oldCouponCodes.forEach(function(couponCode) {
+            self.submitCode(couponCode);
+        });
+    };
+
+    basketService
+        .on('itemAdded', updateCoupons)
+        .on('itemRemoved', updateCoupons)
+        .on('clear', updateCoupons);
 
     return self;
 });

@@ -26,7 +26,7 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
     //allow this service to raise events
     cc.observable.mixin(self);
 
-    var createQuoteData = function(){
+    self.createQuoteData = function(){
 
         var data = basketService
                     .getItems()
@@ -74,7 +74,12 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
             requestModel.shippingMethod = modelCopy.selectedShippingMethod.method;
         }
 
-        requestModel.quote = JSON.stringify(createQuoteData());
+        requestModel.quote = JSON.stringify(self.createQuoteData());
+
+        var coupons = basketService.getActiveCoupons().map(function(coupon) {
+            return coupon.code;
+        });
+        requestModel.coupons = JSON.stringify(coupons);
 
         return requestModel;
     };
