@@ -1,0 +1,6 @@
+<ul class="cc-thumbnail-bar">
+    <li ng-class="$index === selectedImageIndex ? 'cc-thumbnail-bar__item--active' : 'cc-thumbnail-bar__item'"
+        ng-click="setSelectedImageIndex($index)"
+        ng-repeat="image in images" style="background-image:url('{{ image.url }}');">
+    </li>
+</ul>

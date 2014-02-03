@@ -136,13 +136,12 @@ angular.module("src/directives/ccSelectBox/ccselectbox.tpl.html", []).run(["$tem
 
 angular.module("src/directives/ccThumbnailBar/ccthumbnailbar.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("src/directives/ccThumbnailBar/ccthumbnailbar.tpl.html",
-    "<div class=\"cc-thumbnail-bar\">\n" +
-    "    <img \n" +
-    "        class=\"cc-thumbnail-bar-image\" \n" +
-    "        ng-class=\"$index === selectedImageIndex ? 'cc-thumbnail-active' : ''\"\n" +
-    "        ng-click=\"setSelectedImageIndex($index)\" \n" +
-    "        ng-repeat=\"image in images\" ng-src=\"{{image.url}}\"/>\n" +
-    "</div>\n" +
+    "<ul class=\"cc-thumbnail-bar\">\n" +
+    "    <li ng-class=\"$index === selectedImageIndex ? 'cc-thumbnail-bar__item--active' : 'cc-thumbnail-bar__item'\"\n" +
+    "        ng-click=\"setSelectedImageIndex($index)\"\n" +
+    "        ng-repeat=\"image in images\" style=\"background-image:url('{{ image.url }}');\">\n" +
+    "    </li>\n" +
+    "</ul>\n" +
     "");
 }]);
 
