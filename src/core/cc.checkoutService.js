@@ -37,16 +37,18 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
 
     var createQuoteData = function(){
 
-        var data = {};
-        basketService
-            .getItems()
-            .forEach(function(item){
-                data[item.product.id] = {
-                    qty: item.quantity,
-                    variantID: item.getVariantID(),
-                    optionID: item.getOptionID()
-                };
-            });
+        var data = basketService
+                    .getItems()
+                    .map(function(item){
+                        return {
+                            // we always want the productId to be a string and this method
+                            // has a safer handling of undefined and null values
+                            productID: item.product.id + '',
+                            qty: item.quantity,
+                            variantID: item.getVariantID(),
+                            optionID: item.getOptionID()
+                        };
+                    });
 
         return data;
     };

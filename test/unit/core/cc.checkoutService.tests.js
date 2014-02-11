@@ -91,7 +91,7 @@ asyncTest('getSupportCheckoutMethod sends correct data to the backend', function
     ok(data.task === 'GETPAYMENTMETHODS', 'sets correct task');
     //it's easier to compare the JavaScript objects here instead of the raw JSON strings.
     deepEqual(JSON.parse(data.invoiceAddress),mrPinkBackendRepresentation, 'sends invoice address correctly');
-    ok(data.quote === '{"10":{"qty":1,"variantID":null,"optionID":null}}', 'sends quote data correctly');
+    ok(data.quote === '[{"productID":"10","qty":1,"variantID":null,"optionID":null}]', 'sends quote data correctly');
 });
 
 asyncTest('checkoutWithCouchCommerce returns a promise with a token', function() {
