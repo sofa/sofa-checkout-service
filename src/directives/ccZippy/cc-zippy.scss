@@ -1,23 +1,23 @@
 
-.cc-zippy-caption{
+.cc-zippy__caption {
     position: relative;
 }
 
-.cc-zippy-icon{
+.cc-zippy-icon {
     position: absolute;
     right: 0;
     top: 50%;
     margin-top: -7px;
 }
 
-.cc-zippy-content{
+.cc-zippy__content {
     overflow: hidden;
     max-height: 9999px;
     @include vendor-prefix('transition', 0.3s);
 }
 
-.cc-zippy-closed{
-    .cc-zippy-content{
+.cc-zippy--closed {
+    .cc-zippy__content {
         max-height: 0;
     }
 }
