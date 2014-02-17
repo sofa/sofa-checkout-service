@@ -38,46 +38,28 @@
     -webkit-overflow-scrolling: touch;
 }
 
-.cc-container, %cc-container{
-    display: -webkit-box;
+.cc-container,
+%cc-container {
+    @extend %flexbox;
 }
 
 .cc-body{
     @extend %cc-container;
+
+    @include flex(1);
+
     overflow: hidden;
-    -webkit-box-flex: 1;
     min-width: 100%;
     min-height: 100%;
     position: relative;
 }
 
-.cc-docking-vertical{
-    display: -webkit-box;
-    -webkit-box-flex: 1;
-    -webkit-box-orient: vertical;
+.cc-docking-vertical {
+    @extend %flexbox;
+
+    @include flex(1);
+    @include flex-direction(column);
+
     min-width: 100%;
     min-height: 100%;
-}
-
-.cc-grid-cell, %cc-grid-cell{
-    position: relative;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-box-align: stretch;
-    -webkit-box-flex: 1;
-}
-
-.cc-grid-row, %cc-grid-row{
-    -webkit-box-flex: 1;
-    display: -webkit-box;
-    -webkit-box-orient: horizontal;
-    -webkit-box-align: stretch;
-    width: 100%;
-}
-
-.cc-grid, %cc-grid{
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-box-align: stretch;
-    height: 100%;
 }
