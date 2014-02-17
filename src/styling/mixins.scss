@@ -16,6 +16,11 @@
   #{$name}: $argument;
 }
 
+@mixin clearfix {
+    content: "";
+    display: table;
+    clear: both;
+}
 
 @mixin anti-blurry {
     -webkit-transform: translate3d(0,0,0);
@@ -87,6 +92,17 @@
     @else {
         @return lighten($color, $amount);
     }
+}
+
+// tint() and shade() from https://github.com/thoughtbot/bourbon/blob/master/app/assets/stylesheets/functions/_tint-shade.scss
+// Add percentage of white to a color
+@function tint($color, $percent){
+    @return mix(white, $color, $percent);
+}
+
+// Add percentage of black to a color
+@function shade($color, $percent){
+    @return mix(black, $color, $percent);
 }
 
 @mixin button-gradient($bg-color){
