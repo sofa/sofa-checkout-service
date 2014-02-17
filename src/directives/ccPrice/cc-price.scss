@@ -1,0 +1,24 @@
+
+%cc-basic-price {
+    display:inline-block;
+    padding: 0 5px;
+}
+
+.cc-price {
+    line-height: 1.5;
+}
+
+.cc-price__price {
+    @extend %cc-basic-price;
+}
+
+.cc-price__price--old {
+    @extend %cc-basic-price;
+
+    text-decoration: line-through;
+    font-size:smaller;
+}
+
+.cc-price__price--special {
+    @extend %cc-basic-price;
+}

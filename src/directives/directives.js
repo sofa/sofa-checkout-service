@@ -22,5 +22,6 @@ angular.module('sdk.directives', [
     'sdk.directives.ccGoUpControl',
     'sdk.directives.ccGoBackButton',
     'sdk.directives.ccImageFullScreen',
-    'sdk.directives.ccImageZoom'
+    'sdk.directives.ccImageZoom',
+    'sdk.directives.ccPrice'
 ]);
