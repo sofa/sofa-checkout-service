@@ -9,6 +9,9 @@
   "repository": "",
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "sofa-core": "~0.1.2"
+  },
   "devDependencies": {
     "grunt": "~0.4.1",
     "doxx": "~0.5.9",

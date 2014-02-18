@@ -8,7 +8,7 @@ module.exports = function(grunt) {
         ccAngularName: 'cc.angular',
         distdir: 'dist',
         src: {
-            cc: ['src/core/cc.js','src/core/**/*.js'],
+            cc: ['node_modules/sofa-core/dist/sofa.core.js','src/core/**/*.js'],
             ccTests: ['test/**/*.js','!test/karma/**/*'],
             ccAngular:  [
                             'src/services/**/*.js',
@@ -82,10 +82,8 @@ module.exports = function(grunt) {
                             'vendor/angular-sanitize.js',
                             'vendor/angular-mocks.js',
                             'vendor/angular-scenario.js',
-  
-                            //how could we just link to src.cc here?
-                            'src/core/cc.js',
                             //the test config
+                            'node_modules/sofa-core/dist/sofa.core.js',
                             'test/cc.config.js',
                             'src/core/**/*.js',
                             //how could we just link to src.ccAngular here?
