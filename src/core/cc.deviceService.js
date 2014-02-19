@@ -16,7 +16,8 @@ cc.define('cc.DeviceService', function($window){
         userOS,
         userOSver;
 
-    var MODERN_FLEXBOX_SUPPORT = 'cc-supports-modern-flexbox',
+    var MODERN_FLEXBOX_SUPPORT = 'cc-modern-flexbox',
+        NO_MODERN_FLEXBOX_SUPPORT = 'cc-no-modern-flexbox',
         IPAD_ON_IOS_7 = 'cc-ipad-ios-7';
 
     /**
@@ -301,6 +302,8 @@ cc.define('cc.DeviceService', function($window){
         var htmlTag = self.getHtmlTag();
         if (self.hasModernFlexboxSupport()){
             htmlTag.className += ' ' + MODERN_FLEXBOX_SUPPORT;
+        } else {
+            htmlTag.className += ' ' + NO_MODERN_FLEXBOX_SUPPORT;
         }
     };
 
