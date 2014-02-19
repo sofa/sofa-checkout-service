@@ -1,7 +1,7 @@
 module('cc.basketService.tests');
 
 var createBasketService = function(){
-    return new cc.BasketService(new cc.LocalStorageService(), new cc.ConfigService());
+    return new sofa.BasketService(new sofa.LocalStorageService(), new sofa.ConfigService());
 };
 
 test('can create BasketService instance', function() {

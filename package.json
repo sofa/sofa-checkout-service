@@ -10,7 +10,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "sofa-core": "~0.1.2"
+    "sofa-core": "~0.1.x",
+    "sofa-storages": "~0.1.x"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
