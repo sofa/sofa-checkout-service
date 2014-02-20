@@ -2976,11 +2976,28 @@ cc.define('cc.DeviceService', function($window){
 
     var ua = navigator.userAgent,
         htmlTag,
+        isIpadOnIos7,
         uaindex,
         userOS,
         userOSver;
 
-    var MODERN_FLEXBOX_SUPPORT = 'cc-supports-modern-flexbox';
+    var MODERN_FLEXBOX_SUPPORT = 'cc-modern-flexbox',
+        NO_MODERN_FLEXBOX_SUPPORT = 'cc-no-modern-flexbox',
+        IPAD_ON_IOS_7 = 'cc-ipad-ios-7';
+
+    /**
+     * @method getHtmlTag
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Returns an HTMLDomObject for HTML.
+     *
+     * @return {object} HTMLDomObject
+     */
+    self.getHtmlTag = function(){
+        htmlTag = htmlTag || document.getElementsByTagName('html')[0];
+        return htmlTag;
+    };
 
     // determine OS
     if ( ua.match(/iPad/i) || ua.match(/iPhone/i) ){
@@ -3006,6 +3023,22 @@ cc.define('cc.DeviceService', function($window){
         userOSver = 'unknown';
     }
 
+    // determine iPad + iOS7 (for landscape innerHeight bug, see flagIpadOnIos7() )
+    isIpadOnIos7 = ua.match(/iPad/i) && userOSver.substr(0, 1) === '7';
+
+    /**
+     * @method isIpadOnIos7
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Returns a boolean indicating whether the device is an iPad running iOS7 or not.
+     *
+     * @return {boolean}
+     */
+    self.isIpadOnIos7 = function () {
+        return isIpadOnIos7;
+    };
+
     var dimensions = {};
 
     var updateDimension = function(){
@@ -3020,6 +3053,19 @@ cc.define('cc.DeviceService', function($window){
     var versionStartsWith = function(str){
         var version = self.getOsVersion();
         return version.indexOf(str) === 0;
+    };
+
+    /**
+     * @method getViewportDimensions
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Returns the height of the viewport
+     *
+     * @return {int}
+     */
+    self.getViewportDimensions = function () {
+        return dimensions;
     };
 
     /**
@@ -3046,20 +3092,6 @@ cc.define('cc.DeviceService', function($window){
      */
     self.isInLandscapeMode = function(){
         return !self.isInPortraitMode();
-    };
-
-    /**
-     * @method getHtmlTag
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Returns an HTMLDomObject for HTML.
-     *
-     * @return {object} HTMLDomObject
-     */
-    self.getHtmlTag = function(){
-        htmlTag = htmlTag || document.getElementsByTagName('html')[0];
-        return htmlTag;
     };
 
     /**
@@ -3235,6 +3267,23 @@ cc.define('cc.DeviceService', function($window){
         var htmlTag = self.getHtmlTag();
         if (self.hasModernFlexboxSupport()){
             htmlTag.className += ' ' + MODERN_FLEXBOX_SUPPORT;
+        } else {
+            htmlTag.className += ' ' + NO_MODERN_FLEXBOX_SUPPORT;
+        }
+    };
+
+    /**
+     * @method flagIpadOnIos7
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Flags the document with an SDK specific class to help getting around a bug in iOS7 on iPad landscape mode.
+     * see http://stackoverflow.com/questions/18855642/ios-7-css-html-height-100-692px
+     */
+    self.flagIpadOnIos7 = function() {
+        if (isIpadOnIos7) {
+            var htmlTag = self.getHtmlTag();
+            htmlTag.className += ' ' + IPAD_ON_IOS_7;
         }
     };
 

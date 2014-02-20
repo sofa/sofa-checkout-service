@@ -1,6 +1,6 @@
 (function(window, cc, angular, undefined){
 
-angular.module('cc.angular.templates', ['src/directives/ccAddress/ccaddress.tpl.html', 'src/directives/ccBreadcrumbs/cc-breadcrumbs.tpl.html', 'src/directives/ccCategoryTreeView/cc-category-tree-view.tpl.html', 'src/directives/ccCheckBox/cccheckbox.tpl.html', 'src/directives/ccElasticViews/elasticViews.tpl.html', 'src/directives/ccFooter/ccfooter.tpl.html', 'src/directives/ccGoBackButton/cc-go-back-button.tpl.html', 'src/directives/ccGoUpButton/cc-go-up-button.tpl.html', 'src/directives/ccGoUpControl/cc-go-up-control.tpl.html', 'src/directives/ccLoadingSpinner/ccloadingspinner.tpl.html', 'src/directives/ccSelectBox/ccselectbox.tpl.html', 'src/directives/ccThumbnailBar/ccthumbnailbar.tpl.html', 'src/directives/ccVariantSelector/ccvariantselector.tpl.html', 'src/directives/ccZippy/cczippy.tpl.html']);
+angular.module('cc.angular.templates', ['src/directives/ccAddress/ccaddress.tpl.html', 'src/directives/ccBreadcrumbs/cc-breadcrumbs.tpl.html', 'src/directives/ccCategoryTreeView/cc-category-tree-view.tpl.html', 'src/directives/ccCheckBox/cccheckbox.tpl.html', 'src/directives/ccElasticViews/elasticViews.tpl.html', 'src/directives/ccFooter/ccfooter.tpl.html', 'src/directives/ccGoBackButton/cc-go-back-button.tpl.html', 'src/directives/ccGoUpButton/cc-go-up-button.tpl.html', 'src/directives/ccGoUpControl/cc-go-up-control.tpl.html', 'src/directives/ccLoadingSpinner/ccloadingspinner.tpl.html', 'src/directives/ccPrice/cc-price.tpl.html', 'src/directives/ccSelectBox/ccselectbox.tpl.html', 'src/directives/ccThumbnailBar/cc-thumbnail-bar.tpl.html', 'src/directives/ccVariantSelector/ccvariantselector.tpl.html', 'src/directives/ccZippy/cc-zippy.tpl.html']);
 
 angular.module("src/directives/ccAddress/ccaddress.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("src/directives/ccAddress/ccaddress.tpl.html",
@@ -99,7 +99,7 @@ angular.module("src/directives/ccGoUpControl/cc-go-up-control.tpl.html", []).run
     "    <cc-go-up-button class=\"cc-go-up-control\" ng-if=\"getParentLabel()\">\n" +
     "        <i class=\"cc-go-up-control__icon\">\n" +
     "        </i>\n" +
-    "        <span bo-text=\"getParentLabel()\"></span>\n" +
+    "        <span class=\"cc-go-up-control__text\" bo-text=\"getParentLabel()\"></span>\n" +
     "    </cc-go-up-button>");
 }]);
 
@@ -118,12 +118,35 @@ angular.module("src/directives/ccLoadingSpinner/ccloadingspinner.tpl.html", []).
     "</div>");
 }]);
 
+angular.module("src/directives/ccPrice/cc-price.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("src/directives/ccPrice/cc-price.tpl.html",
+    "\n" +
+    "<span class=\"cc-price\" ng-class=\"{ 'cc-price--is-special': product.hasOldPrice() }\">\n" +
+    "\n" +
+    "    <span ng-if=\"product.hasOldPrice()\">\n" +
+    "\n" +
+    "        <span class=\"cc-price__price--old\" ng-bind=\"product.priceOld | currency\"></span>\n" +
+    "\n" +
+    "        <span class=\"cc-price__price--special\" ng-bind=\"product.price | currency\"></span>\n" +
+    "\n" +
+    "    </span>\n" +
+    "\n" +
+    "    <span ng-if=\"!product.hasOldPrice()\">\n" +
+    "\n" +
+    "        <span class=\"cc-price__price\" ng-bind=\"product.price | currency\"></span>\n" +
+    "\n" +
+    "    </span>\n" +
+    "\n" +
+    "</span>\n" +
+    "");
+}]);
+
 angular.module("src/directives/ccSelectBox/ccselectbox.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("src/directives/ccSelectBox/ccselectbox.tpl.html",
     "<div class=\"cc-select-box\">\n" +
     "     <span class=\"cc-select-box__display-value\" ng-bind=\"displayFn(_selectedValue)\"></span>\n" +
     "     <span class=\"cc-select-box__display-value\" ng-hide=\"_selectedValue\">{{chooseText}} {{propertyName}}</span>\n" +
-    "     <i class=\"cc-select-box__select-icon fa fa-chevron-down\"></i>\n" +
+    "     <i class=\"cc-select-box__select-icon\"></i>\n" +
     "    <select name=\"{{propertyName}}\"\n" +
     "            class=\"cc-select-box__native-select\" \n" +
     "            ng-model=\"_selectedValue\" \n" +
@@ -134,8 +157,8 @@ angular.module("src/directives/ccSelectBox/ccselectbox.tpl.html", []).run(["$tem
     "</div>");
 }]);
 
-angular.module("src/directives/ccThumbnailBar/ccthumbnailbar.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("src/directives/ccThumbnailBar/ccthumbnailbar.tpl.html",
+angular.module("src/directives/ccThumbnailBar/cc-thumbnail-bar.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("src/directives/ccThumbnailBar/cc-thumbnail-bar.tpl.html",
     "<ul class=\"cc-thumbnail-bar\">\n" +
     "    <li ng-class=\"$index === selectedImageIndex ? 'cc-thumbnail-bar__item--active' : 'cc-thumbnail-bar__item'\"\n" +
     "        ng-click=\"setSelectedImageIndex($index)\"\n" +
@@ -164,14 +187,14 @@ angular.module("src/directives/ccVariantSelector/ccvariantselector.tpl.html", []
     "");
 }]);
 
-angular.module("src/directives/ccZippy/cczippy.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("src/directives/ccZippy/cczippy.tpl.html",
+angular.module("src/directives/ccZippy/cc-zippy.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("src/directives/ccZippy/cc-zippy.tpl.html",
     "<div class=\"cc-zippy\">\n" +
-    "    <div class=\"cc-zippy-caption\">\n" +
+    "    <div class=\"cc-zippy__caption\">\n" +
     "        <span ng-bind=\"caption\"></span>\n" +
     "        <i class=\"cc-zippy-icon\"></i>\n" +
     "    </div>\n" +
-    "    <div class=\"cc-zippy-content\" ng-transclude></div>\n" +
+    "    <div class=\"cc-zippy__content\" ng-transclude></div>\n" +
     "</div>\n" +
     "");
 }]);
@@ -3873,6 +3896,28 @@ angular.module('sdk.directives.ccLoadingSpinner')
             templateUrl: 'src/directives/ccLoadingSpinner/ccloadingspinner.tpl.html'
         };
     });
+angular.module('sdk.directives.ccPrice', ['src/directives/ccPrice/cc-price.tpl.html']);
+
+/**
+ * Creates pricing markup for prices and special prices
+ *
+ *
+ */
+angular.module('sdk.directives.ccPrice')
+    .directive('ccPrice', function() {
+
+        'use strict';
+
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                product: '='
+            },
+            templateUrl: 'src/directives/ccPrice/cc-price.tpl.html'
+        };
+    });
+
 angular.module('sdk.directives.ccScrollFix', []);
 
 angular.module('sdk.directives.ccScrollFix')
@@ -4134,7 +4179,7 @@ angular.module('sdk.directives.ccTemplateCode')
             }
         };
     });
-angular.module('sdk.directives.ccThumbnailBar', ['src/directives/ccThumbnailBar/ccthumbnailbar.tpl.html']);
+angular.module('sdk.directives.ccThumbnailBar', ['src/directives/ccThumbnailBar/cc-thumbnail-bar.tpl.html']);
 
 angular.module('sdk.directives.ccThumbnailBar')
     .directive('ccThumbnailBar', function() {
@@ -4148,6 +4193,7 @@ angular.module('sdk.directives.ccThumbnailBar')
                 images: '=',
                 onChange: '&'
             },
+            templateUrl: 'src/directives/ccThumbnailBar/cc-thumbnail-bar.tpl.html',
             controller: ['$scope', function($scope){
                 $scope.setSelectedImageIndex = function(index){
 
@@ -4167,8 +4213,7 @@ angular.module('sdk.directives.ccThumbnailBar')
                         $scope.setSelectedImageIndex(0);
                     }
                 });
-            }],
-            templateUrl: 'src/directives/ccThumbnailBar/ccthumbnailbar.tpl.html'
+            }]
         };
     });
 
@@ -4262,7 +4307,7 @@ angular.module('sdk.directives.ccVariantSelector')
     });
 
 
-angular.module('sdk.directives.ccZippy', ['src/directives/ccZippy/cczippy.tpl.html']);
+angular.module('sdk.directives.ccZippy', ['src/directives/ccZippy/cc-zippy.tpl.html']);
 
 angular.module('sdk.directives.ccZippy')
     .directive('ccZippy', function() {
@@ -4281,21 +4326,21 @@ angular.module('sdk.directives.ccZippy')
                 caption: '=?',
                 opened: '=?'
             },
-            templateUrl: 'src/directives/ccZippy/cczippy.tpl.html',
+            templateUrl: 'src/directives/ccZippy/cc-zippy.tpl.html',
             link: function(scope, $element, attrs){
                 var element = $element[0],
-                    $caption = angular.element(element.querySelectorAll('.cc-zippy-caption')[0]),
+                    $caption = angular.element(element.querySelectorAll('.cc-zippy__caption')[0]),
                     $icon = angular.element(element.querySelectorAll('.cc-zippy-icon')[0]),
-                    openedIconClass = 'fa fa-chevron-up',
-                    closedIconClass = 'fa fa-chevron-down';
+                    openedIconClass = 'cc-zippy-icon--opened',
+                    closedIconClass = 'cc-zippy-icon--closed';
 
                 defaultIfUndefined(scope, 'caption', 'default');
 
                 scope.opened = attrs.initOpened === undefined ? false : (attrs.initOpened === "true");
 
                 var setOpen = function(opened){
-                    $element.removeClass(opened ? 'cc-zippy-closed' : 'cc-zippy-opened');
-                    $element.addClass(opened ? 'cc-zippy-opened' : 'cc-zippy-closed');
+                    $element.removeClass(opened ? 'cc-zippy--closed' : 'cc-zippy--opened');
+                    $element.addClass(opened ? 'cc-zippy--opened' : 'cc-zippy--closed');
                     $icon.removeClass(opened ? closedIconClass : openedIconClass);
                     $icon.addClass(opened ? openedIconClass : closedIconClass);
                 };
@@ -4337,7 +4382,8 @@ angular.module('sdk.directives', [
     'sdk.directives.ccGoUpControl',
     'sdk.directives.ccGoBackButton',
     'sdk.directives.ccImageFullScreen',
-    'sdk.directives.ccImageZoom'
+    'sdk.directives.ccImageZoom',
+    'sdk.directives.ccPrice'
 ]);
 angular.module('sdk.decorators.$rootScope', []);
 
