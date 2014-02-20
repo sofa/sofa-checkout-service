@@ -1,4 +1,17 @@
-.cc-form-label{
+.cc-form-label, %cc-form-label {
     margin: 5px 0 5px 5px;
     font-size: 12px;
+}
+.cc-form-label--required {
+    @extend %cc-form-label;
+
+    font-weight:bold;
+
+    &:after {
+        content: " *";
+    }
+}
+
+.cc-form-label--optional {
+    @extend %cc-form-label;
 }
