@@ -322,5 +322,16 @@ cc.define('cc.DeviceService', function($window){
         }
     };
 
+        /**
+     * @method setViewportHeightToDeviceHeight
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Sets the height of the html element to the actual height of the device.
+     */
+    self.setViewportHeightToDeviceHeight = function() {
+        self.getHtmlTag().style.height = self.getViewportDimensions().height + 'px';
+    };
+
     return self;
 });
