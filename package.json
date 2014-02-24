@@ -10,7 +10,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "sofa-core": "0.2.x",
+    "sofa-core": "0.3.x",
     "sofa-storages": "0.2.x",
     "sofa-logging-service": "0.1.x",
     "sofa-device-service": "0.1.2"

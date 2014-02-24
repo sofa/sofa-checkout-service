@@ -12,10 +12,10 @@ describe('Testing the UrlParserService', function() {
 
     beforeEach(module('sdk.services.urlParserService'));
 
-    beforeEach(inject(function(urlParserService, $location) {
-        _urlParserService = urlParserService;
-        _$location = $location;
-    }));
+    beforeEach(function () {
+        _$location = new sofa.LocationService();
+        _urlParserService = new sofa.UrlParserService(_$location);
+    });
 
     it('it should detect it as product url', function() {
 

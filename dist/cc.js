@@ -1646,7 +1646,7 @@ sofa.define('sofa.LocalStorageService', function () {
  * of simple key - value pairs.
  */
 sofa.define('sofa.MemoryStorageService', function () {
-    
+
     var _storage = {};
 
     /**
@@ -1691,10 +1691,22 @@ sofa.define('sofa.MemoryStorageService', function () {
         delete _storage[id];
     };
 
+    /**
+     * @method clear
+     * @memberof sofa.MemoryStorageService
+     *
+     * @description
+     * Clear memory storage.
+     */
+    var clear = function () {
+        _storage = {};
+    };
+
     return {
         set: set,
         get: get,
-        remove: remove
+        remove: remove,
+        clear: clear
     };
 });
 
