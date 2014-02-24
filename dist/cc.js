@@ -1,5 +1,7 @@
 (function(window, undefined){
 
+;(function (window, undefined) {
+
 'use strict';
 /**
  * @module sofa
@@ -25,172 +27,170 @@
 var cc = window.cc = {};
 var sofa = window.sofa = cc;
 
-(function () {
-    /**
-     * @method namespace
-     * @memberof sofa
-     * @public
-     *
-     * @description
-     * Creates the given namespace within the 'sofa' namespace. The method returns
-     * a `namespaceObject` that contains information about the namespace.
-     *
-     * Simply pass a string that represents a namespace using the dot notation.
-     * So a valid namespace would be 'foo.bar.bazinga' as well as 'foo'.
-     *
-     * It's not required to mention 'sofa' as root in the namespace, since this
-     * method creates the given namespace automatically under 'sofa' namespace.
-     *
-     * In case 'sofa' is given as root namespace, it gets stripped out, so its more
-     * a kind of syntactic sugar to mention 'sofa' namespace.
-     *
-     * @example
-     * // creates a namespace for `sofa.services.FooService`
-     * sofa.namespace('sofa.services.FooService');
-     *
-     * @example
-     * // also creates a namespace for `sofa.services.FooService`
-     * sofa.namespace('services.FooService');
-     *
-     * @param {string} namespaceString A namespace string e.g. 'sofa.services.FooService'.
-     * @returns {namespaceObject} A namespace object containing information about the current
-     * and parent targets.
-     */
-    sofa.namespace = function (namespaceString) {
-        var parts = namespaceString.split('.'), parent = sofa, i;
+/**
+ * @method namespace
+ * @memberof sofa
+ * @public
+ *
+ * @description
+ * Creates the given namespace within the 'sofa' namespace. The method returns
+ * a `namespaceObject` that contains information about the namespace.
+ *
+ * Simply pass a string that represents a namespace using the dot notation.
+ * So a valid namespace would be 'foo.bar.bazinga' as well as 'foo'.
+ *
+ * It's not required to mention 'sofa' as root in the namespace, since this
+ * method creates the given namespace automatically under 'sofa' namespace.
+ *
+ * In case 'sofa' is given as root namespace, it gets stripped out, so its more
+ * a kind of syntactic sugar to mention 'sofa' namespace.
+ *
+ * @example
+ * // creates a namespace for `sofa.services.FooService`
+ * sofa.namespace('sofa.services.FooService');
+ *
+ * @example
+ * // also creates a namespace for `sofa.services.FooService`
+ * sofa.namespace('services.FooService');
+ *
+ * @param {string} namespaceString A namespace string e.g. 'sofa.services.FooService'.
+ * @returns {namespaceObject} A namespace object containing information about the current
+ * and parent targets.
+ */
+sofa.namespace = function (namespaceString) {
+    var parts = namespaceString.split('.'), parent = sofa, i;
 
-        //strip redundant leading global
-        if (parts[0] === 'cc' || parts[0] === 'sofa') {
-            parts = parts.slice(1);
+    //strip redundant leading global
+    if (parts[0] === 'cc' || parts[0] === 'sofa') {
+        parts = parts.slice(1);
+    }
+
+    var targetParent = sofa,
+        targetName;
+
+    for (i = 0; i < parts.length; i++) {
+        //create a propery if it doesn't exist
+        if (typeof parent[parts[i]] === 'undefined') {
+            parent[parts[i]] = {};
         }
 
-        var targetParent = sofa,
-            targetName;
-
-        for (i = 0; i < parts.length; i++) {
-            //create a propery if it doesn't exist
-            if (typeof parent[parts[i]] === 'undefined') {
-                parent[parts[i]] = {};
-            }
-
-            if (i === parts.length - 2) {
-                targetParent = parent[parts[i]];
-            }
-
-            targetName = parts[i];
-
-            parent = parent[parts[i]];
+        if (i === parts.length - 2) {
+            targetParent = parent[parts[i]];
         }
 
-        /**
-        * @typdef namespaceObject
-        * @type {object}
-        * @property {object} targetParent - Parent namespace object.
-        * @property {string} targetName - Current namespace name.
-        * @property {function} bind - A convenient function to bind a value to the namespace.
-        */
-        return {
-            targetParent: targetParent,
-            targetName: targetName,
-            bind: function (target) {
-                targetParent[targetName] = target;
-            }
-        };
-    };
+        targetName = parts[i];
+
+        parent = parent[parts[i]];
+    }
 
     /**
-     * @method define
-     * @memberof sofa
-     * @public
-     *
-     * @description
-     * This method delegates to [sofa.namespace]{@link sofa#namespace} and binds a new
-     * value to it's given namespace. Because of delegation, rules for the given
-     * namespace are the same as for `sofa.namespace`.
-     *
-     * As second argument you have to provide a constructor function that will be
-     * bound to the given namespace.
-     *
-     * @example
-     * // defining constructor for 'foo.bar'
-     * sofa.define('foo.bar', function () {
-     *  // some logic
-     * });
-     *
-     * @example
-     * // of course it's also possible to use named functions
-     * var Greeter = function () {
-     *  return {
-     *    sayHello: function () {
-     *      console.log('hello');
-     *    }
-     *  };
-     * };
-     *
-     * sofa.define('greeter', Greeter);
-     *
-     * @param {string} namespace A namespace string e.g. 'sofa.services.FooService".
-     * @param {function} fn A constructor function that will be bound to the namespace.
-     */
-    sofa.define = function (namespace, fn) {
-        sofa.namespace(namespace).bind(fn);
+    * @typdef namespaceObject
+    * @type {object}
+    * @property {object} targetParent - Parent namespace object.
+    * @property {string} targetName - Current namespace name.
+    * @property {function} bind - A convenient function to bind a value to the namespace.
+    */
+    return {
+        targetParent: targetParent,
+        targetName: targetName,
+        bind: function (target) {
+            targetParent[targetName] = target;
+        }
     };
+};
 
-    /**
-     * @method inherits
-     * @memberof sofa
-     * @public
-     *
-     * @description
-     * Sets up an inheritance chain between two objects
-     * (See {@link https://github.com/isaacs/inherits/blob/master/inherits.js}).
-     *
-     * @example
-     * // creating a constructor
-     * function Child () {
-     *   Child.super.call(this)
-     *   console.error([this
-     *                ,this.constructor
-     *                ,this.constructor === Child
-     *                ,this.constructor.super === Parent
-     *                ,Object.getPrototypeOf(this) === Child.prototype
-     *                ,Object.getPrototypeOf(Object.getPrototypeOf(this))
-     *                 === Parent.prototype
-     *                ,this instanceof Child
-     *                ,this instanceof Parent])
-     * }
-     *
-     * // creating another constructor
-     * function Parent () {}
-     *
-     * sofa.inherits(Child, Parent)
-     * // getting an instance
-     * new Child
-     *
-     * @param {object} c Child constructor.
-     * @param {object} p Parent constructor.
-     * @param {object} proto Prototype object.
-     */
+/**
+ * @method define
+ * @memberof sofa
+ * @public
+ *
+ * @description
+ * This method delegates to [sofa.namespace]{@link sofa#namespace} and binds a new
+ * value to it's given namespace. Because of delegation, rules for the given
+ * namespace are the same as for `sofa.namespace`.
+ *
+ * As second argument you have to provide a constructor function that will be
+ * bound to the given namespace.
+ *
+ * @example
+ * // defining constructor for 'foo.bar'
+ * sofa.define('foo.bar', function () {
+ *  // some logic
+ * });
+ *
+ * @example
+ * // of course it's also possible to use named functions
+ * var Greeter = function () {
+ *  return {
+ *    sayHello: function () {
+ *      console.log('hello');
+ *    }
+ *  };
+ * };
+ *
+ * sofa.define('greeter', Greeter);
+ *
+ * @param {string} namespace A namespace string e.g. 'sofa.services.FooService".
+ * @param {function} fn A constructor function that will be bound to the namespace.
+ */
+sofa.define = function (namespace, fn) {
+    sofa.namespace(namespace).bind(fn);
+};
 
-     /*jshint asi: true*/
-    sofa.inherits = function (c, p, proto) {
-        //this code uses a shitty form of semicolon less
-        //writing. We just copied it from:
-        //https://github.com/isaacs/inherits/blob/master/inherits.js
+/**
+ * @method inherits
+ * @memberof sofa
+ * @public
+ *
+ * @description
+ * Sets up an inheritance chain between two objects
+ * (See {@link https://github.com/isaacs/inherits/blob/master/inherits.js}).
+ *
+ * @example
+ * // creating a constructor
+ * function Child () {
+ *   Child.super.call(this)
+ *   console.error([this
+ *                ,this.constructor
+ *                ,this.constructor === Child
+ *                ,this.constructor.super === Parent
+ *                ,Object.getPrototypeOf(this) === Child.prototype
+ *                ,Object.getPrototypeOf(Object.getPrototypeOf(this))
+ *                 === Parent.prototype
+ *                ,this instanceof Child
+ *                ,this instanceof Parent])
+ * }
+ *
+ * // creating another constructor
+ * function Parent () {}
+ *
+ * sofa.inherits(Child, Parent)
+ * // getting an instance
+ * new Child
+ *
+ * @param {object} c Child constructor.
+ * @param {object} p Parent constructor.
+ * @param {object} proto Prototype object.
+ */
 
-        proto = proto || {};
-        var e = {};
-        
-        [c.prototype, proto].forEach(function (s) {
-            Object.getOwnPropertyNames(s).forEach(function (k) {
-                e[k] = Object.getOwnPropertyDescriptor(s, k);
-            });
+ /*jshint asi: true*/
+sofa.inherits = function (c, p, proto) {
+    //this code uses a shitty form of semicolon less
+    //writing. We just copied it from:
+    //https://github.com/isaacs/inherits/blob/master/inherits.js
+
+    proto = proto || {};
+    var e = {};
+    
+    [c.prototype, proto].forEach(function (s) {
+        Object.getOwnPropertyNames(s).forEach(function (k) {
+            e[k] = Object.getOwnPropertyDescriptor(s, k);
         });
-        c.prototype = Object.create(p.prototype, e);
-        c.super = p
-    };
-    /*jshint asi: false*/
-})();
+    });
+    c.prototype = Object.create(p.prototype, e);
+    c.super = p
+};
+/*jshint asi: false*/
 
 'use strict';
 /**
@@ -300,6 +300,33 @@ sofa.define('sofa.ConfigService', function () {
     };
 
     return self;
+});
+
+'use strict';
+/**
+ * @name LocationService
+ * @class
+ * @namespace sofa.LocationService
+ *
+ * @description
+ * Service to work with the browsers location.
+ */
+sofa.define('sofa.LocationService', function () {
+
+    return {
+        /**
+         * @method path
+         * @memberof sofa.LocationService
+         *
+         * @description
+         * Return the location href
+         *
+         * @return {string} href
+         */
+        path: function () {
+            return window.location.href;
+        }
+    };
 });
 
 'use strict';
@@ -436,29 +463,55 @@ sofa.models.Product.prototype.hasMultipleImages = function () {
 };
 
 /**
- * @method getBasePriceInfo
+ * @method hasBasePrice
  * @memberof sofa.models.Product
  *
  * @description
- * Returns some additional information about the product.
- * TODO: This is pure shit. I need to talk to Felix got get that clean
- * It's only in here to keep some German clients happy that rely on it.
- * We need to make it more flexibile & localizable
+ * Returns true if a product has a base price.
+ *
+ * @return {boolean}
  */
-sofa.models.Product.prototype.getBasePriceInfo = function () {
-    if (this.custom1 > 0) {
-        if (this.custom3 === 'kg') {
-            return 'entspricht ' + sofa.Util.toFixed(this.custom1, 2) + ' € pro 1 Kilogramm (kg)';
-        } else if (this.custom3 === 'St') {
-            return 'entpricht ' + sofa.Util.toFixed(this.custom1, 2) + ' € pro 1 Stück (St)';
-        } else if (this.custom3 === 'L') {
-            return 'entpricht ' + sofa.Util.toFixed(this.custom1, 2) + ' € pro 1 Liter (l)';
-        } else if (sofa.Util.isString(this.custom3) && this.custom3.length > 0) {
-            return 'entpricht ' + sofa.Util.toFixed(this.custom1, 2) + ' € pro ' + this.custom3;
-        }
-    }
+sofa.models.Product.prototype.hasBasePrice = function () {
+    return this.custom1 > 0;
+};
 
-    return '';
+/**
+ * @method getBasePrice
+ * @memberof sofa.models.Product
+ *
+ * @description
+ * Returns the base price per unit
+ *
+ * @return {Number}
+ */
+sofa.models.Product.prototype.getBasePriceStr = function () {
+    return sofa.Util.toFixed(this.custom1, 2);
+};
+
+/**
+ * @method hasUnit
+ * @memberof sofa.models.Product
+ *
+ * @description
+ * Returns true if a product has unit defined
+ *
+ * @return {boolean}
+ */
+sofa.models.Product.prototype.hasUnit = function () {
+    return sofa.Util.isString(this.custom3) && this.custom3.length > 0;
+};
+
+/**
+ * @method getUnit
+ * @memberof sofa.models.Product
+ *
+ * @description
+ * Returns the unit of the product
+ *
+ * @return {String}
+ */
+sofa.models.Product.prototype.getUnit = function () {
+    return this.custom3;
 };
 
 /**
@@ -528,6 +581,19 @@ sofa.models.Product.prototype.areAllVariantsOutOfStock = function () {
     }
 
     return false;
+};
+
+/**
+ * @method hasAttributes
+ * @memberof sofa.models.Product
+ *
+ * @description
+ * Returns true if the product has at least one attribute key
+ *
+ * @return {boolean}
+ */
+sofa.models.Product.prototype.hasAttributes = function () {
+    return this.attributes && Object.keys(this.attributes).length > 0;
 };
 
 'use strict';
@@ -1065,12 +1131,12 @@ sofa.Util = {
      * @memberof sofa.Util
      *
      * @description
-     * Transformes a given value to a fixed value by a given precision.
+     * Transformes a given value to a string with a fixed value by a given precision.
      *
      * @param {(number|float)} value Value to fix.
      * @param {number} precision Precision.
      *
-     * @return {number} Transformed fixed value.
+     * @return {String} Transformed fixed value.
      */
     toFixed: function (value, precision) {
 
@@ -1397,6 +1463,8 @@ sofa.define('sofa.util.TreeIterator', function (tree, childNodeProperty) {
         }
     };
 });
+
+}(window));
 
 ;(function(){
     var store = {},
@@ -1755,6 +1823,351 @@ sofa.define('sofa.LoggingService', function (configService) {
 });
 
 } (sofa, console));
+
+;(function (sofa, document, undefined) {
+
+'use strict';
+/* global navigator */
+/* global document */
+/* global sofa */
+/**
+ * @name DeviceService
+ * @namespace sofa.DeviceService
+ *
+ * @description
+ * This is a helper service that gives you methods to check for certain contexts
+ * on touch devices etc.. It determines the state for the usage of flexbox as well
+ * as things like overflow:scroll support.
+ */
+sofa.define('sofa.DeviceService', function ($window) {
+    var self = {};
+
+    var ua = navigator.userAgent,
+        htmlTag,
+        isIpadOnIos7,
+        uaindex,
+        userOS,
+        userOSver;
+
+    var MODERN_FLEXBOX_SUPPORT = 'cc-modern-flexbox',
+        NO_MODERN_FLEXBOX_SUPPORT = 'cc-no-modern-flexbox',
+        IPAD_ON_IOS_7 = 'cc-ipad-ios-7';
+
+    /**
+     * @method getHtmlTag
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Returns an HTMLDomObject for HTML.
+     *
+     * @return {object} HTMLDomObject
+     */
+    self.getHtmlTag = function () {
+        htmlTag = htmlTag || document.getElementsByTagName('html')[0];
+        return htmlTag;
+    };
+
+    // determine OS
+    if (ua.match(/iPad/i) || ua.match(/iPhone/i)) {
+        userOS = 'iOS';
+        uaindex = ua.indexOf('OS ');
+    }
+    else if (ua.match(/Android/i)) {
+        userOS = 'Android';
+        uaindex = ua.indexOf('Android ');
+    }
+    else {
+        userOS = 'unknown';
+    }
+
+    // determine version
+    if (userOS === 'iOS'  &&  uaindex > -1) {
+        userOSver = ua.substr(uaindex + 3, 3).replace('_', '.');
+    } else if (userOS === 'Android'  &&  uaindex > -1) {
+        userOSver = ua.substr(uaindex + 8, 3);
+    } else {
+        userOSver = 'unknown';
+    }
+
+    // determine iPad + iOS7 (for landscape innerHeight bug, see flagIpadOnIos7() )
+    isIpadOnIos7 = ua.match(/iPad/i) && userOSver.substr(0, 1) === '7';
+
+    /**
+     * @method isIpadOnIos7
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Returns a boolean indicating whether the device is an iPad running iOS7 or not.
+     *
+     * @return {boolean}
+     */
+    self.isIpadOnIos7 = function () {
+        return isIpadOnIos7;
+    };
+
+    var dimensions = {};
+
+    var updateDimension = function () {
+        dimensions.width = $window.innerWidth;
+        dimensions.height = $window.innerHeight;
+    };
+
+    updateDimension();
+
+    $window.addEventListener('orientationchange', updateDimension, false);
+
+    var versionStartsWith = function (str) {
+        var version = self.getOsVersion();
+        return version.indexOf(str) === 0;
+    };
+
+    /**
+     * @method getViewportDimensions
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Returns the height of the viewport
+     *
+     * @return {int}
+     */
+    self.getViewportDimensions = function () {
+        return dimensions;
+    };
+
+    /**
+     * @method isInPortraitMode
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Returns a bool indicating whether the decice is held in portrait mode.
+     *
+     * @return {bool} boolean
+     */
+    self.isInPortraitMode = function () {
+        return dimensions.height > dimensions.width;
+    };
+
+    /**
+     * @method isLandscapeMode
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Returns a bool indicating whether the decice is held in landscape mode.
+     *
+     * @return {boolean}
+     */
+    self.isInLandscapeMode = function () {
+        return !self.isInPortraitMode();
+    };
+
+    /**
+     * @method isTabletSiye
+     * @memberof sofa.DeviceService
+     *
+     * @description
+     * Returns true if the current device is in "TabletSize". See SO link for more
+     * information (http://stackoverflow.com/questions/6370690/media-queries-how-to-target-desktop-tablet-and-mobile).
+     *
+     * @return {boolean} Whether the device is in tablet size or not.
+     */
+    self.isTabletSize = function () {
+        return $window.screen.width > 641;
+    };
+
+    /**
+     * @method isStockAndroidBrowser
+     * @memberof sofa.DeviceService
+     *
+     * @description
+     * Checks if browser is stock android browser or not.
+     *
+     * @return {boolean}
+     */
+    self.isStockAndroidBrowser = function () {
+        return userOS === 'Android' && ua.indexOf('Chrome') < 0;
+    };
+
+    /**
+     * @method flagOs
+     * @memberof sofa.DeviceService
+     *
+     * @description
+     * Flags the current document with an SDK specific class depending on the OS
+     * of the device.
+     */
+    self.flagOs = function () {
+        var htmlTag = self.getHtmlTag();
+        var version = self.getOsVersion();
+        var majorVersion = version.length > 0 ? version[0] : '0';
+        htmlTag.className += ' cc-os-' + self.getOs().toLowerCase() + ' cc-osv-' + majorVersion;
+    };
+
+    /**
+     * @method flagOverflowSupport
+     * @memberof sofa.DeviceService
+     *
+     * @description
+     * Flags the current document with an SDK specific class depending on given
+     * overflow:scroll support.
+     */
+    self.flagOverflowSupport = function () {
+        var htmlTag = self.getHtmlTag();
+        htmlTag.className += self.hasOverflowSupport() ? ' cc-has-overflow-support' : ' cc-has-no-overflow-support';
+    };
+
+     /**
+      * @method getUserAgent
+      * @memberof sofa.DeviceService
+      *
+      * @description
+      *
+      * @example
+      *
+      * @return {string} User agent currently in use
+      */
+    self.getUserAgent = function () {
+        return ua;
+    };
+
+    /**
+     * @method getOs
+     * @memberof sofa.DeviceService
+     *
+     * @description
+     * Returns OS string.
+     *
+     * @return {string} Name of OS.
+     */
+    self.getOs = function () {
+        return userOS;
+    };
+
+    /**
+     * @method getOsVersion
+     * @memberof sofa.DeviceService
+     *
+     * @description
+     * Returns OS version string.
+     *
+     * @return {string} Version of OS.
+     */
+    self.getOsVersion = function () {
+        return userOSver;
+    };
+
+    /**
+     * @method isAndroid2x
+     * @memberof sofa.DeviceService
+     *
+     * @description
+     * Returns true if device os is Android and version starts with '2'.
+     *
+     * @return {bool}
+     */
+    self.isAndroid2x = function () {
+        return self.getOs() === 'Android' && versionStartsWith('2');
+    };
+
+    /**
+     * @method hasOverflowSupport
+     * @memberof sofa.DeviceService
+     *
+     * @description
+     * Checks if the current device is blacklisted as such with no overflow:scroll support
+     *
+     * @return {boolean}
+     */
+    self.hasOverflowSupport = function () {
+        if (self.getOs() === 'Android') {
+            return !versionStartsWith('2');
+        } else if (self.getOs() === 'iOS') {
+            return  !versionStartsWith('1') &&
+                    !versionStartsWith('2') &&
+                    !versionStartsWith('3') &&
+                    !versionStartsWith('4');
+        }
+    };
+
+    /**
+     * @method hasModernFlexboxSupport
+     * @memberof sofa.DeviceService
+     *
+     * @description
+     * Checks if the browser has modern flexbox support or not.
+     *
+     * @return {boolean}
+     */
+    self.hasModernFlexboxSupport = function () {
+
+        // Firefox currently has a flexbox bug
+        // See http://stackoverflow.com/a/17435156/956278
+        if (ua.match(/Firefox/i)) {
+            return false;
+        }
+
+        var supportedValues = [
+            '-webkit-flex',
+            '-moz-flex',
+            '-o-flex',
+            '-ms-flex',
+            'flex'
+        ];
+
+        var testSpan = document.createElement('span');
+
+        supportedValues.forEach(function (value) {
+            testSpan.style.display = value;
+        });
+
+        return supportedValues.indexOf(testSpan.style.display) > -1;
+    };
+
+    /**
+     * @method flagModernFlexboxSupport
+     * @memberof sofa.DeviceService
+     *
+     * @description
+     * Flags the document with an SDK specific class for modern flexbox support.
+     */
+    self.flagModernFlexboxSupport = function () {
+        var htmlTag = self.getHtmlTag();
+        if (self.hasModernFlexboxSupport()) {
+            htmlTag.className += ' ' + MODERN_FLEXBOX_SUPPORT;
+        } else {
+            htmlTag.className += ' ' + NO_MODERN_FLEXBOX_SUPPORT;
+        }
+    };
+
+    /**
+     * @method flagIpadOnIos7
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Flags the document with an SDK specific class to help getting around a bug in iOS7 on iPad landscape mode.
+     * see http://stackoverflow.com/questions/18855642/ios-7-css-html-height-100-692px
+     */
+    self.flagIpadOnIos7 = function () {
+        if (isIpadOnIos7) {
+            var htmlTag = self.getHtmlTag();
+            htmlTag.className += ' ' + IPAD_ON_IOS_7;
+        }
+    };
+
+    /**
+     * @method setViewportHeightToDeviceHeight
+     * @memberof cc.DeviceService
+     *
+     * @description
+     * Sets the height of the html element to the actual height of the device.
+     */
+    self.setViewportHeightToDeviceHeight = function () {
+        self.getHtmlTag().style.height = self.getViewportDimensions().height + 'px';
+    };
+
+    return self;
+});
+
+}(sofa, document));
 
 /**
  * @name BasketService
@@ -2960,344 +3373,6 @@ cc.define('cc.CouchService', function($http, $q, configService){
             category.hasChildren = category.children && category.children.length > 0;
             categoryMap.addCategory(category);
         });
-    };
-
-    return self;
-});
-
-/** * @name DeviceService
- * @namespace cc.DeviceService
- *
- * @description
- * This is a helper service that gives you methods to check for certain contexts
- * on touch devices etc.. It determines the state for the usage of flexbox as well
- * as things like overflow:scroll support.
- */
-cc.define('cc.DeviceService', function($window){
-    var self = {};
-
-    var ua = navigator.userAgent,
-        htmlTag,
-        isIpadOnIos7,
-        uaindex,
-        userOS,
-        userOSver;
-
-    var MODERN_FLEXBOX_SUPPORT = 'cc-modern-flexbox',
-        NO_MODERN_FLEXBOX_SUPPORT = 'cc-no-modern-flexbox',
-        IPAD_ON_IOS_7 = 'cc-ipad-ios-7';
-
-    /**
-     * @method getHtmlTag
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Returns an HTMLDomObject for HTML.
-     *
-     * @return {object} HTMLDomObject
-     */
-    self.getHtmlTag = function(){
-        htmlTag = htmlTag || document.getElementsByTagName('html')[0];
-        return htmlTag;
-    };
-
-    // determine OS
-    if ( ua.match(/iPad/i) || ua.match(/iPhone/i) ){
-        userOS = 'iOS';
-        uaindex = ua.indexOf( 'OS ' );
-    }
-    else if ( ua.match(/Android/i) ){
-        userOS = 'Android';
-        uaindex = ua.indexOf( 'Android ' );
-    }
-    else{
-        userOS = 'unknown';
-    }
-
-    // determine version
-    if ( userOS === 'iOS'  &&  uaindex > -1 ){
-        userOSver = ua.substr( uaindex + 3, 3 ).replace( '_', '.' );
-    }
-    else if ( userOS === 'Android'  &&  uaindex > -1 ){
-        userOSver = ua.substr( uaindex + 8, 3 );
-    }
-    else {
-        userOSver = 'unknown';
-    }
-
-    // determine iPad + iOS7 (for landscape innerHeight bug, see flagIpadOnIos7() )
-    isIpadOnIos7 = ua.match(/iPad/i) && userOSver.substr(0, 1) === '7';
-
-    /**
-     * @method isIpadOnIos7
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Returns a boolean indicating whether the device is an iPad running iOS7 or not.
-     *
-     * @return {boolean}
-     */
-    self.isIpadOnIos7 = function () {
-        return isIpadOnIos7;
-    };
-
-    var dimensions = {};
-
-    var updateDimension = function(){
-        dimensions.width = $window.innerWidth;
-        dimensions.height = $window.innerHeight;
-    };
-
-    updateDimension();
-
-    $window.addEventListener("orientationchange", updateDimension, false);
-
-    var versionStartsWith = function(str){
-        var version = self.getOsVersion();
-        return version.indexOf(str) === 0;
-    };
-
-    /**
-     * @method getViewportDimensions
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Returns the height of the viewport
-     *
-     * @return {int}
-     */
-    self.getViewportDimensions = function () {
-        return dimensions;
-    };
-
-    /**
-     * @method isInPortraitMode
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Returns a bool indicating whether the decice is held in portrait mode.
-     *
-     * @return {object} HTMLDomObject
-     */
-    self.isInPortraitMode = function(){
-        return dimensions.height > dimensions.width;
-    };
-
-    /**
-     * @method isLandscapeMode
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Returns a bool indicating whether the decice is held in landscape mode.
-     *
-     * @return {object} HTMLDomObject
-     */
-    self.isInLandscapeMode = function(){
-        return !self.isInPortraitMode();
-    };
-
-    /**
-     * @method isTabletSiye
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Returns true if the current device is in "TabletSize". See SO link for more
-     * information (http://stackoverflow.com/questions/6370690/media-queries-how-to-target-desktop-tablet-and-mobile).
-     *
-     * @return {boolean} Whether the device is in tablet size or not.
-     */
-    self.isTabletSize = function(){
-        return $window.screen.width > 641;
-    };
-
-    /**
-     * @method isStockAndroidBrowser
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Checks if browser is stock android browser or not.
-     *
-     * @return {boolean}
-     */
-    self.isStockAndroidBrowser = function(){
-        return userOS === 'Android' && ua.indexOf("Chrome") < 0;
-    };
-
-    /**
-     * @method flagOs
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Flags the current document with an SDK specific class depending on the OS
-     * of the device.
-     */
-    self.flagOs = function(){
-        var htmlTag = self.getHtmlTag();
-        var version = self.getOsVersion();
-        var majorVersion = version.length > 0 ? version[0] : '0';
-        htmlTag.className += ' cc-os-' + self.getOs().toLowerCase() + ' cc-osv-' + majorVersion;
-    };
-
-    /**
-     * @method flagOverflowSupport
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Flags the current document with an SDK specific class depending on given
-     * overflow:scroll support.
-     */
-    self.flagOverflowSupport = function(){
-        var htmlTag = self.getHtmlTag();
-        htmlTag.className += self.hasOverflowSupport() ? ' cc-has-overflow-support' : ' cc-has-no-overflow-support';
-    };
-
-     /**
-      * @method getUserAgent
-      * @memberof cc.DeviceService
-      *
-      * @description
-      *
-      * @example
-      *
-      * @return {string} User agent currently in use
-      */
-    self.getUserAgent = function(){
-        return ua;
-    };
-    
-    /**
-     * @method getOs
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Returns OS string.
-     *
-     * @return {string} Name of OS.
-     */
-    self.getOs = function(){
-        return userOS;
-    };
-
-    /**
-     * @method getOsVersion
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Returns OS version string.
-     *
-     * @return {string} Version of OS.
-     */
-    self.getOsVersion = function(){
-        return userOSver;
-    };
-
-    /**
-     * @method isAndroid2x
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Returns true if device os is Android and version starts with '2'.
-     *
-     * @return {bool}
-     */
-    self.isAndroid2x = function () {
-      return self.getOs() === 'Android' && versionStartsWith('2');
-    };
-
-    /**
-     * @method hasOverflowSupport
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Checks if the current device is blacklisted as such with no overflow:scroll support
-     *
-     * @return {boolean}
-     */
-     self.hasOverflowSupport = function(){
-        if (self.getOs() === 'Android'){
-            return !versionStartsWith('2');
-        }
-        else if (self.getOs() === 'iOS'){
-            return  !versionStartsWith('1') &&
-                    !versionStartsWith('2') &&
-                    !versionStartsWith('3') &&
-                    !versionStartsWith('4');
-        }
-    };
-
-    /**
-     * @method hasModernFlexboxSupport
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Checks if the browser has modern flexbox support or not.
-     *
-     * @return {boolean}
-     */
-    self.hasModernFlexboxSupport = function(){
-
-        // Firefox currently has a flexbox bug
-        // See http://stackoverflow.com/a/17435156/956278
-        if ( ua.match(/Firefox/i) ) {
-            return false;
-        }
-
-        var supportedValues =   [
-                                    '-webkit-flex',
-                                    '-moz-flex',
-                                    '-o-flex',
-                                    '-ms-flex',
-                                    'flex'
-                                ];
-
-        var testSpan = document.createElement('span');
-        supportedValues.forEach(function(value){
-            testSpan.style.display = value;
-        });
-
-        return supportedValues.indexOf(testSpan.style.display) > -1;
-    };
-
-    /**
-     * @method flagModernFlexboxSupport
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Flags the document with an SDK specific class for modern flexbox support.
-     */
-    self.flagModernFlexboxSupport = function(){
-        var htmlTag = self.getHtmlTag();
-        if (self.hasModernFlexboxSupport()){
-            htmlTag.className += ' ' + MODERN_FLEXBOX_SUPPORT;
-        } else {
-            htmlTag.className += ' ' + NO_MODERN_FLEXBOX_SUPPORT;
-        }
-    };
-
-    /**
-     * @method flagIpadOnIos7
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Flags the document with an SDK specific class to help getting around a bug in iOS7 on iPad landscape mode.
-     * see http://stackoverflow.com/questions/18855642/ios-7-css-html-height-100-692px
-     */
-    self.flagIpadOnIos7 = function() {
-        if (isIpadOnIos7) {
-            var htmlTag = self.getHtmlTag();
-            htmlTag.className += ' ' + IPAD_ON_IOS_7;
-        }
-    };
-
-        /**
-     * @method setViewportHeightToDeviceHeight
-     * @memberof cc.DeviceService
-     *
-     * @description
-     * Sets the height of the html element to the actual height of the device.
-     */
-    self.setViewportHeightToDeviceHeight = function() {
-        self.getHtmlTag().style.height = self.getViewportDimensions().height + 'px';
     };
 
     return self;
