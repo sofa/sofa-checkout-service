@@ -1419,6 +1419,14 @@ sofa.Util = {
         var jsonStr = str.substring(1, str.length - 1);
 
         return JSON.parse(jsonStr);
+    },
+
+    toFormData: function (obj) {
+        var str = [];
+        for (var p in obj) {
+            str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]));
+        }
+        return str.join('&');
     }
 };
 
@@ -3041,15 +3049,6 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
     //allow this service to raise events
     cc.observable.mixin(self);
 
-    //we might want to put this into a different service
-    var toFormData = function(obj) {
-        var str = [];
-        for(var p in obj){
-            str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]));
-        }
-        return str.join('&');
-    };
-
     var createQuoteData = function(){
 
         var data = basketService
@@ -3195,7 +3194,7 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
             method: 'POST',
             url: FULL_CHECKOUT_URL,
             headers: FORM_DATA_HEADERS,
-            transformRequest: toFormData,
+            transformRequest: cc.Util.toFormData,
             data: requestModel
         })
         .then(function(response){
@@ -3256,7 +3255,7 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
             method: 'POST',
             url: FULL_CHECKOUT_URL,
             headers: FORM_DATA_HEADERS,
-            transformRequest: toFormData,
+            transformRequest: cc.Util.toFormData,
             data: requestModel
         })
         .then(function(response){
@@ -3306,7 +3305,7 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
             method: 'POST',
             url: FULL_CHECKOUT_URL,
             headers: FORM_DATA_HEADERS,
-            transformRequest: toFormData,
+            transformRequest: cc.Util.toFormData,
             data: requestModel
         })
         .then(function(response){
@@ -3390,7 +3389,7 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
             method: 'POST',
             url: CHECKOUT_URL + 'summaryst.php',
             headers: FORM_DATA_HEADERS,
-            transformRequest: toFormData,
+            transformRequest: cc.Util.toFormData,
             data: {
                 details: 'get',
                 token: token
@@ -3448,7 +3447,7 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
             method: 'POST',
             url: CHECKOUT_URL + 'docheckoutst.php',
             headers: FORM_DATA_HEADERS,
-            transformRequest: toFormData,
+            transformRequest: cc.Util.toFormData,
             data: {
                 details: 'get',
                 token: token
