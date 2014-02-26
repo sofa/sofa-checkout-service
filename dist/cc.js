@@ -2277,6 +2277,221 @@ sofa.define('sofa.UrlParserService', function ($location) {
 
 } (sofa));
 
+;(function (sofa, undefined) {
+
+'use strict';
+/**
+ * @name SearchService
+ * @namespace sofa.SearchService
+ *
+ * @description
+ * Search service which let's you query against the CouchCommerce API to search
+ * for products.
+ */
+sofa.define('sofa.SearchService', function (configService, $http, $q, applier) {
+
+    var self = {},
+        lastRequestToken = null,
+        storeCode = configService.get('storeCode'),
+        debounceMs = configService.get('searchDebounceMs', 300),
+        endpoint = configService.get('searchUrl') + '?callback=JSON_CALLBACK&len=100';
+
+    /**
+     * @method search
+     * @memberof sofa.SearchService
+     *
+     * @description
+     * Searches for `searchStr` and groups the results if `grouping` is truthy.
+     * This search is promise based to let you have flow control. Therefore it
+     * returns a promise that gets resolved with the search results.
+     *
+     * @param {string} searchStr A search string.
+     * @param {boolean} grouping Whether to group the results or not.
+     *
+     * @return {Promise} A promise with the search results.
+     */
+    self.search = function (searchStr, grouping) {
+
+        var deferredResponse = $q.defer();
+
+        debouncedInnerSearch(deferredResponse, searchStr, grouping);
+
+        return deferredResponse.promise;
+    };
+
+    var innerSearch = function (deferredResponse, searchStr, grouping) {
+
+        lastRequestToken = sofa.Util.createGuid();
+
+        var requestToken = lastRequestToken;
+
+        if (!searchStr) {
+            deferredResponse.resolve({
+                data: {
+                    results: [],
+                    groupedResults: []
+                }
+            });
+        } else {
+            $http({
+                method: 'JSONP',
+                url: endpoint,
+                params: {
+                    q: createSearchCommand(normalizeUmlauts(searchStr)),
+                    fetch: 'text, categoryUrlKey, categoryName, productUrlKey, productImageUrl'
+                }
+            }).then(function (response) {
+                if (requestToken === lastRequestToken) {
+                    if (grouping) {
+                        groupResult(response, grouping);
+                    }
+                    deferredResponse.resolve(response);
+                }
+            });
+        }
+
+        //in an angular context, we need to call the applier to
+        //make $http run. For non angular builds, no applier is needed.
+        if (applier) {
+            applier();
+        }
+        return deferredResponse.promise;
+    };
+
+    var groupResult = function (response) {
+        var results = response.data.results;
+        var grouped = results.reduce(function (prev, curr) {
+            if (!prev[curr.categoryUrlKey]) {
+                var group = prev[curr.categoryUrlKey] = {
+                    groupKey: curr.categoryUrlKey,
+                    groupText: curr.categoryName,
+                    items: []
+                };
+                prev.items.push(group);
+            }
+
+            prev[curr.categoryUrlKey].items.push(curr);
+
+            return prev;
+        }, { items: [] });
+        //we only care about the array. The object was just for fast lookups!
+        response.data.groupedResults = grouped.items;
+    };
+
+    var debouncedInnerSearch = sofa.Util.debounce(innerSearch, debounceMs);
+
+    var createSearchCommand = function (searchStr) {
+        var reverseString = searchStr.split('').reverse().join('');
+        return '(text:' + searchStr + '* OR reverse_text:' + reverseString + '*) AND storeCode:' + storeCode;
+    };
+
+    var normalizeUmlauts = function (searchStr) {
+        return searchStr
+                    .replace(/[áàâä]/g, 'a')
+                    .replace(/[úùûü]/g, 'u')
+                    .replace(/[óòôö]/g, 'o')
+                    .replace(/[éèêë]/g, 'e')
+                    .replace(/[ß]/g, 'ss');
+    };
+
+    return self;
+});
+
+}(sofa));
+
+;(function (sofa, undefined) {
+
+'use strict';
+/* global sofa */
+/**
+ * @name TrackingService
+ * @namespace sofa.TrackingService
+ *
+ * @description
+ * Abstraction layer to communicate with concrete tracker services
+ * like Google Analytics.
+ */
+sofa.define('sofa.TrackingService', function ($window, $http, configService) {
+
+    var self = {};
+    var trackers = self.__trackers = [];
+
+    /**
+     * @method addTracker
+     * @memberof sofa.TrackingService
+     *
+     * @description
+     * Adds a concrete tracker service implementation and also takes care
+     * of the setup. It'll throw exceptions if the tracker service
+     * doesn't implement the needed API.
+     *
+     * @param {object} tracker Concrete tracker implementation.
+     */
+    self.addTracker = function (tracker) {
+
+        if (!tracker.setup) {
+            throw new Error('tracker must implement a setup method');
+        }
+
+        if (!tracker.trackEvent) {
+            throw new Error('tracker must implement a trackEvent method');
+        }
+
+        if (!tracker.trackTransaction) {
+            throw new Error('tracker must implement a trackTransaction method');
+        }
+
+        tracker.setup();
+        trackers.push(tracker);
+    };
+
+    /**
+     * @method trackEvent
+     * @memberof sofa.TrackingService
+     *
+     * @description
+     * Forces all registered trackers to track an event.
+     *
+     * @param {object} eventData Event data object.
+     */
+    self.trackEvent = function (eventData) {
+        trackers.forEach(function (tracker) {
+            tracker.trackEvent(eventData);
+        });
+    };
+
+    /**
+     * @method trackTransaction
+     * @memberof sofa.TrackingService
+     *
+     * @description
+     * First requests information about a token from the backend, then
+     * forces all registered trackers to track the associated transaction.
+     *
+     * @param {string} token.
+     */
+    self.trackTransaction = function (token) {
+
+        var requestTransactionDataUrl = configService.get('checkoutUrl') + 'summaryfin.php';
+
+        $http.get(requestTransactionDataUrl + '?token=' + token + '&details=get')
+            .then(function (response) {
+                var transactionData = sofa.Util.toJson(response.data);
+
+                transactionData.token = token;
+
+                trackers.forEach(function (tracker) {
+                    tracker.trackTransaction(transactionData);
+                });
+            });
+
+    };
+
+    return self;
+});
+
+}(sofa));
+
 /**
  * @name BasketService
  * @class
@@ -3727,95 +3942,6 @@ cc.define('cc.tracker.GoogleAnalyticsTracker', function(options) {
         });
 
         _gaq.push(['_trackTrans']);
-
-    };
-
-    return self;
-});
-
-/**
- * @name TrackingService
- * @namespace cc.TrackingService
- *
- * @description
- * Abstraction layer to communicate with concrete tracker services
- * like Google Analytics.
- */
-cc.define('cc.TrackingService', function($window, $http, configService){
-    'use strict';
-
-    var self = {};
-    var trackers = [];
-
-    /**
-     * @method addTracker
-     * @memberof cc.TrackingService
-     *
-     * @description
-     * Adds a concrete tracker service implementation and also takes care
-     * of the setup. It'll throw exceptions if the tracker service
-     * doesn't implement the needed API.
-     *
-     * @param {object} tracker Concrete tracker implementation.
-     */
-    self.addTracker = function(tracker) {
-
-        if (!tracker.setup){
-            throw new Error('tracker must implement a setup method');
-        }
-
-        if (!tracker.trackEvent){
-            throw new Error('tracker must implement a trackEvent method');
-        }
-
-        if (!tracker.trackTransaction){
-            throw new Error('tracker must implement a trackTransaction method');
-        }
-
-        tracker.setup();
-
-        trackers.push(tracker);
-    };
-
-    /**
-     * @method trackEvent
-     * @memberof cc.TrackingService
-     *
-     * @description
-     * Forces all registered trackers to track an event.
-     *
-     * @param {object} eventData Event data object.
-     */
-    self.trackEvent = function(eventData) {
-        trackers.forEach(function(tracker){
-            tracker.trackEvent(eventData);
-        });
-    };
-
-    /**
-     * @method trackTransaction
-     * @memberof cc.TrackingService
-     *
-     * @description
-     * First requests information about a token from the backend, then
-     * forces all registered trackers to track the associated transaction.
-     *
-     * @param {string} token.
-     */
-    self.trackTransaction = function(token) {
-
-        var requestTransactionDataUrl = configService.get('checkoutUrl') + 'summaryfin.php';
-
-        $http.get(requestTransactionDataUrl+'?token='+token+'&details=get')
-        .then(function(response){
-            var transactionData = cc.Util.toJson(response.data);
-
-            transactionData.token = token;
-
-            trackers.forEach(function(tracker){
-                tracker.trackTransaction(transactionData);
-            });
-        });
 
     };
 
