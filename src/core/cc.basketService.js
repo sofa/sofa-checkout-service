@@ -333,6 +333,19 @@ cc.define('cc.BasketService', function(storageService, configService, options){
     };
 
     /**
+     * @method isEmpty
+     * @memberof cc.BasketService
+     *
+     * @description
+     * Returns true if the basket is Empty.
+     *
+     * @return {boolean} empty state.
+     */
+    self.isEmpty = function(){
+        return items.length === 0;
+    };
+
+    /**
      * @method getSummary
      * @memberof cc.BasketService
      *

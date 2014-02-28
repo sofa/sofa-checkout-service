@@ -25,6 +25,24 @@ test('can add item', function() {
 
 });
 
+test('isEmpty reports true or false accordingly', function() {
+    var basketService = createBasketService();
+    basketService.clear();
+
+    ok(basketService.isEmpty(), 'is empty');
+
+    var product = new cc.models.Product();
+    product.name = 'Testproduct';
+    product.id = 10;
+
+    var basketItem = basketService.addItem(product, 1);
+    ok(!basketService.isEmpty(), 'is not empty');
+
+    basketService.clear();
+
+    ok(basketService.isEmpty(), 'is empty');
+});
+
 test('trying to add an item that is out of stock raises exception', function() {
     var basketService = createBasketService();
     basketService.clear();
