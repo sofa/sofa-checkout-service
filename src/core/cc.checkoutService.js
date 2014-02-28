@@ -163,6 +163,8 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
      */
     self.getSupportedCheckoutMethods = function(checkoutModel){
 
+        assureCorrectShippingAddress(checkoutModel);
+
         var requestModel = createRequestData(checkoutModel);
         requestModel.task = 'GETPAYMENTMETHODS';
 
@@ -230,9 +232,7 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
      */
     self.checkoutWithCouchCommerce = function(checkoutModel){
 
-        if(checkoutModel.addressEqual){
-            checkoutModel.shippingAddress = checkoutModel.billingAddress;
-        }
+        assureCorrectShippingAddress(checkoutModel);
 
         var requestModel = createRequestData(checkoutModel);
         requestModel.task = 'CHECKOUT';
@@ -454,6 +454,13 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
 
             return $q.reject(fail);
         });
+    };
+
+    var assureCorrectShippingAddress = function (checkoutModel) {
+        if(checkoutModel.addressEqual){
+            checkoutModel.shippingAddress = checkoutModel.billingAddress;
+        }
+        return checkoutModel;
     };
 
     return self;
