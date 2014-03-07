@@ -1,11 +1,11 @@
-angular.module('sdk.directives.ccFooter', [
-    'src/directives/ccFooter/ccfooter.tpl.html',
+angular.module('sdk.directives.ccFooterLinks', [
+    'src/directives/ccFooterLinks/cc-footer-links.tpl.html',
     'sdk.services.configService'
 ]);
 
 angular
-    .module('sdk.directives.ccFooter')
-    .directive('ccFooter', ['configService', function(configService) {
+    .module('sdk.directives.ccFooterLinks')
+    .directive('ccFooterLinks', ['configService', function(configService) {
 
         'use strict';
 
@@ -22,7 +22,7 @@ angular
             scope: {
                 items: '=?'
             },
-            templateUrl: 'src/directives/ccFooter/ccfooter.tpl.html',
+            templateUrl: 'src/directives/ccFooterLinks/cc-footer-links.tpl.html',
             link: function(scope, element, attrs){
                 defaultIfUndefined(scope, 'items', ABOUT_PAGES);
 
