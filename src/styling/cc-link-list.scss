@@ -1,0 +1,44 @@
+
+.cc-link-list, %cc-link-list {
+    margin: 10px 0;
+}
+
+@mixin cc-link-list__item {
+    position: relative;
+    padding: 8px 30px 8px 0;
+    line-height: 1.5;
+    margin-left: 20px;
+    border-top: 1px solid #ccc;
+
+    &:first-child {
+        border-top:0;
+    }
+
+    &:after {
+        @include fa-base-class;
+
+        content: $fa-var-angle-right;
+        position: absolute;
+        right:0;
+        top:50%;
+        width:1.75rem;
+        text-align: center;
+        font-size: 1.25rem;
+
+        @include vendor-prefix(transform, translateY(-50%));
+    }
+}
+
+.cc-link-list__item, %cc-link-list__item {
+    @include cc-link-list__item;
+}
+
+@mixin cc-link-list__item--narrow {
+    @include breakpoint(narrow) {
+        @include cc-link-list__item;
+    }
+}
+
+%cc-link-list__item--narrow {
+    @include cc-link-list__item--narrow;
+}
