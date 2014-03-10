@@ -66,17 +66,27 @@
 
 // TODO change after upgrade to angular 1.2
 // some of these could be replaced by dl, dt and dd
-.cc-key {
-    display:inline-block;
+
+%cc-properties-key-value-base {
+    display: inline-block;
     vertical-align: top;
-    width:45%;
 }
 
-.cc-value {
-    display:inline-block;
-    vertical-align: top;
-    width:55%;
-    margin-left:-0.333333em; // remove the space character between key and value which comes from "inline-block"
+.cc-properties__key {
+    @extend %cc-properties-key-value-base;
+    font-weight: 700;
 }
 
+.cc-properties__value {
+    @extend %cc-properties-key-value-base;
+}
 
+.cc-properties--block {
+    .cc-properties__key {
+        width:45%;
+    }
+    .cc-properties__value {
+        width:55%;
+        margin-left:-0.333333em; // remove the space character between key and value which comes from "inline-block"
+    }
+}
