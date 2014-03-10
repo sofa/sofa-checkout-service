@@ -2595,19 +2595,21 @@ sofa.define('sofa.UserService', function (storageService, configService) {
 
 } (sofa));
 
+;(function (sofa, undefined) {
+
+'use strict';
+/* global sofa */
 /**
  * @name BasketService
  * @class
- * @namespace cc.BasketService
+ * @namespace sofa.BasketService
  *
  * @description
- * `cc.BasketService` is the interface to interact with a shopping cart. It provides
+ * `sofa.BasketService` is the interface to interact with a shopping cart. It provides
  * methods to add, remove or update basket items. It also takes care of writing
  * updates to an available storage service.
  */
-cc.define('cc.BasketService', function(storageService, configService, options){
-
-    'use strict';
+sofa.define('sofa.BasketService', function (storageService, configService, options) {
 
     var self = {},
         storePrefix = 'basketService_',
@@ -2616,8 +2618,7 @@ cc.define('cc.BasketService', function(storageService, configService, options){
         items = sanitizeSavedData(storageService.get(storeItemsName)) || [],
         activeCoupons = sanitizeSavedData(storageService.get(storeCouponsName)) || [],
         productIdentityFn = options && cc.Util.isFunction(options.productIdentityFn) ?
-            options.productIdentityFn : function(productA, productAVariant,
-                                                 productB, productBVariant){
+            options.productIdentityFn : function (productA, productAVariant, productB, productBVariant) {
 
                 var productAVariantID = productAVariant && productAVariant.variantID,
                     productBVariantID = productBVariant && productBVariant.variantID,
@@ -2636,30 +2637,30 @@ cc.define('cc.BasketService', function(storageService, configService, options){
 
 
     //allow this service to raise events
-    cc.observable.mixin(self);
+    sofa.observable.mixin(self);
 
     //http://mutablethought.com/2013/04/25/angular-js-ng-repeat-no-longer-allowing-duplicates/
-    function sanitizeSavedData(data){
-        if (!data){
+    function sanitizeSavedData(data) {
+        if (!data) {
             return data;
         }
 
-        return data.map(function(val){
+        return data.map(function (val) {
             delete val.$$hashKey;
 
             //on serialization all functions go away. That means, we basically
             //have to create a fresh instance again, once we deserialize again
-            var item = cc.Util.extend(new cc.models.BasketItem(), val);
+            var item = sofa.Util.extend(new sofa.models.BasketItem(), val);
 
-            if (item.product){
-                item.product = cc.Util.extend(new cc.models.Product(), item.product);
+            if (item.product) {
+                item.product = sofa.Util.extend(new sofa.models.Product(), item.product);
             }
 
             return item;
         });
     }
 
-    var writeToStore = function(){
+    var writeToStore = function () {
         storageService.set(storeItemsName, items);
         storageService.set(storeCouponsName, activeCoupons);
     };
@@ -2668,7 +2669,7 @@ cc.define('cc.BasketService', function(storageService, configService, options){
 
     /**
      * @method addItem
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
      * Adds an item to the basket. Returns the added basket item.
@@ -2683,17 +2684,17 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {object} The added basket item.
      */
-    self.addItem = function(product, quantity, variant){
+    self.addItem = function (product, quantity, variant) {
 
-        if(product.isOutOfStock()){
+        if (product.isOutOfStock()) {
             throw new Error('product out of stock');
         }
 
         var basketItem = self.find(createProductPredicate(product, variant)),
-            exists = !cc.Util.isUndefined(basketItem);
+            exists = !sofa.Util.isUndefined(basketItem);
 
-        if (!exists){
-            basketItem = new cc.models.BasketItem();
+        if (!exists) {
+            basketItem = new sofa.models.BasketItem();
             items.push(basketItem);
         }
 
@@ -2720,12 +2721,12 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @param {object} couponData An object which contains coupon metadata such as name, amount and description.
      */
-    self.addCoupon = function(couponData){
-        var foundCoupon = cc.Util.find(activeCoupons, function(activeCoupon) {
+    self.addCoupon = function (couponData) {
+        var foundCoupon = cc.Util.find(activeCoupons, function (activeCoupon) {
             return activeCoupon.code === couponData.code;
         });
 
-        if ( !foundCoupon ) {
+        if (!foundCoupon) {
             activeCoupons.push(couponData);
             writeToStore();
 
@@ -2745,8 +2746,8 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @param {object} couponCode The code of the coupon to remove
      */
-    self.removeCoupon = function(couponCode){
-        var couponToBeRemoved = cc.Util.find(activeCoupons, function(activeCoupon) {
+    self.removeCoupon = function (couponCode) {
+        var couponToBeRemoved = cc.Util.find(activeCoupons, function (activeCoupon) {
             return activeCoupon.code === couponCode;
         });
         cc.Util.Array.remove(activeCoupons, couponToBeRemoved);
@@ -2768,37 +2769,37 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {object} basketItem An array of objects that contain coupon data
      */
-    self.getActiveCoupons = function(couponData){
+    self.getActiveCoupons = function () {
         return activeCoupons;
     };
 
     /**
      * @method increaseOne
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
-     * This is actually a shorthand for {@link cc.BasketService#increase cc.BasketService.increase}. It increases the amount of given basket item by one.
+     * This is actually a shorthand for {@link sofa.BasketService#increase sofa.BasketService.increase}. It increases the amount of given basket item by one.
      *
      * @example
-     * cc.BasketService.increaseOne(basketItem);
+     * sofa.BasketService.increaseOne(basketItem);
      * // is equivalent to
-     * cc.BasketService.increase(basketItem, 1);
+     * sofa.BasketService.increase(basketItem, 1);
      *
      * @param {object} basketItem The basketItem that should be increased by one.
      *
      * @return {object} basketItem Updated basket item.
      */
-    self.increaseOne = function(basketItem){
+    self.increaseOne = function (basketItem) {
         return self.increase(basketItem, 1);
     };
 
     /**
      * @method increase
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
      * Increases the quantity of a given basket item by a given value. Increases
-     * by one should be done with {@link cc.BasketService#increaseOne cc.BasketService.increaseOne}.
+     * by one should be done with {@link sofa.BasketService#increaseOne sofa.BasketService.increaseOne}.
      *
      * Behind the scenes, this method is actually a shorthand for
      * `basketService.addItem()` with a particular configuration. Therefore this
@@ -2815,13 +2816,13 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {object} Updated basket item.
      */
-    self.increase = function(basketItem, number){
+    self.increase = function (basketItem, number) {
         return self.addItem(basketItem.product, number, basketItem.variant);
     };
 
     /**
      * @method exists
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
      * Checks if an product exists in the basket. You have to pass the product to
@@ -2839,21 +2840,20 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {bool} True whether the product exists or not.
      */
-    self.exists = function(product, variant){
+    self.exists = function (product, variant) {
         var basketItem = self.find(createProductPredicate(product, variant));
-            return !cc.Util.isUndefined(basketItem);
+        return !sofa.Util.isUndefined(basketItem);
     };
 
-    var createProductPredicate = function(productA, productAVariant, productAOptionId){
-        return function(item){
-            return productIdentityFn(productA, productAVariant,
-                                     item.product, item.variant);
+    var createProductPredicate = function (productA, productAVariant) {
+        return function (item) {
+            return productIdentityFn(productA, productAVariant, item.product, item.variant);
         };
     };
 
     /**
      * @method removeItem
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
      * Removes an item from the basket.
@@ -2864,27 +2864,26 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      * @param {object} product The Product that should be removed from the basket.
      * @param {number} quantity The quantity that should be removed from the basket.
      * @param {object} variant The variant that should be removed from the basket.
-     * @param {int} optionId The optionId that should be removed from the basket.
      *
      * @return {object} Removed basket item.
      */
-    self.removeItem = function(product, quantity, variant, optionId){
+    self.removeItem = function (product, quantity, variant) {
         var basketItem = self.find(createProductPredicate(product, variant));
 
-        if (!basketItem){
+        if (!basketItem) {
             throw new Error('Product id: ' + product.id +
                 ' , variant: ' + variant +
                 '  does not exist in the basket');
         }
 
-        if(basketItem.quantity < quantity){
+        if (basketItem.quantity < quantity) {
             throw new Error('remove quantity is higher than existing quantity');
         }
 
         basketItem.quantity = basketItem.quantity - quantity;
 
-        if (basketItem.quantity === 0){
-            cc.Util.Array.remove(items, basketItem);
+        if (basketItem.quantity === 0) {
+            sofa.Util.Array.remove(items, basketItem);
         }
 
         writeToStore();
@@ -2896,11 +2895,11 @@ cc.define('cc.BasketService', function(storageService, configService, options){
 
     /**
      * @method decreaseOne
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
      * Decreases the quantity of a given basket item by one. This is a shorthand
-     * method for {@link cc.BasketService#decrease cc.BasketService.decrease} and
+     * method for {@link sofa.BasketService#decrease sofa.BasketService.decrease} and
      * returns the updated basket item.
      *
      * @example
@@ -2910,17 +2909,17 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {object} The updated basket item.
      */
-    self.decreaseOne = function(basketItem){
+    self.decreaseOne = function (basketItem) {
         return self.decrease(basketItem, 1);
     };
 
     /**
      * @method decrease
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
      * Decreases that quantity of a given basket item by a given number. This is
-     * shorthand method for {@link cc.BasketService#removeItem cc.BasketItem.removeItem}
+     * shorthand method for {@link sofa.BasketService#removeItem sofa.BasketItem.removeItem}
      * and therefore returns the updated basket item.
      *
      * @example
@@ -2931,13 +2930,13 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {object} Updated basket item.
      */
-    self.decrease = function(basketItem, number){
+    self.decrease = function (basketItem, number) {
         return self.removeItem(basketItem.product, number, basketItem.variant);
     };
 
     /**
      * @method clear
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
      * Removes all items from the basket.
@@ -2947,7 +2946,7 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {object} BasketService instance for method chaining.
      */
-    self.clear = function(){
+    self.clear = function () {
 
         items.length = 0;
         activeCoupons.length = 0;
@@ -2972,7 +2971,7 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {object} BasketService instance for method chaining.
      */
-    self.clearCoupons = function(){
+    self.clearCoupons = function () {
 
         activeCoupons.length = 0;
 
@@ -2986,7 +2985,7 @@ cc.define('cc.BasketService', function(storageService, configService, options){
 
     /**
      * @method find
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
      * Finds a basket item by the given predicate function.
@@ -3000,14 +2999,14 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {object} Found basket item.
      */
-    self.find = function(predicate){
-        return cc.Util.find(items, predicate);
+    self.find = function (predicate) {
+        return sofa.Util.find(items, predicate);
     };
 
 
     /**
      * @method getItems
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
      * Returns all basket items.
@@ -3017,7 +3016,7 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {array} Basket items.
      */
-    self.getItems = function(){
+    self.getItems = function () {
         return items;
     };
 
@@ -3030,13 +3029,13 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {boolean} empty state.
      */
-    self.isEmpty = function(){
+    self.isEmpty = function () {
         return items.length === 0;
     };
 
     /**
      * @method getSummary
-     * @memberof cc.BasketService
+     * @memberof sofa.BasketService
      *
      * @description
      * Returns a summary object of the current basket state.
@@ -3045,7 +3044,7 @@ cc.define('cc.BasketService', function(storageService, configService, options){
      *
      * @return {object} Summary object.
      */
-    self.getSummary = function(options){
+    self.getSummary = function (options) {
         var shipping             = SHIPPING_COST || 0,
             shippingTax          = SHIPPING_TAX,
             freeShippingFrom     = FREE_SHIPPING_FROM,
@@ -3053,15 +3052,16 @@ cc.define('cc.BasketService', function(storageService, configService, options){
             sum                  = 0,
             vat                  = 0,
             discount             = 0,
+            /* jshint camelcase: false */
             surcharge            =  options && options.paymentMethod &&
-                                    cc.Util.isNumber(options.paymentMethod.surcharge) ?
+                                    sofa.Util.isNumber(options.paymentMethod.surcharge) ?
                                     options.paymentMethod.surcharge : 0,
             surcharge_percentage =  options && options.paymentMethod &&
-                                    cc.Util.isNumber(options.paymentMethod.surcharge_percentage) ?
+                                    sofa.Util.isNumber(options.paymentMethod.surcharge_percentage) ?
                                     options.paymentMethod.surcharge_percentage : 0,
             total                = 0;
-
-        items.forEach(function(item){
+            /* jshint camelcase: true */
+        items.forEach(function (item) {
             var itemQuantity = parseInt(item.quantity, 10);
             var product = item.product;
             //attention this doesn't take variants into account yet!
@@ -3069,23 +3069,24 @@ cc.define('cc.BasketService', function(storageService, configService, options){
             var tax = parseInt(product.tax, 10);
             quantity += itemQuantity;
             sum += price * itemQuantity;
-            vat += parseFloat(Math.round((price * tax / (100 + tax) ) * 100) / 100) * itemQuantity;
+            vat += parseFloat(Math.round((price * tax / (100 + tax)) * 100) / 100) * itemQuantity;
         });
-
         //set the shipping to zero if the sum is above the configured free shipping value
         shipping = freeShippingFrom !== null && freeShippingFrom !== undefined && sum >= freeShippingFrom ? 0 : shipping;
 
         //if a valid shipping method is provided, use the price and completely ignore
         //the freeShippingFrom config as it's the backend's responsability to check that.
-        if (options && options.shippingMethod && cc.Util.isNumber(options.shippingMethod.price)){
+        if (options && options.shippingMethod && sofa.Util.isNumber(options.shippingMethod.price)) {
             shipping = options.shippingMethod.price;
         }
 
         total = sum + shipping + discount;
 
-        if ( surcharge_percentage ) {
-            surcharge = total * (surcharge_percentage/100.0);
+        /* jshint camelcase: false */
+        if (surcharge_percentage) {
+            surcharge = total * (surcharge_percentage / 100.0);
         }
+        /* jshint camelcase: true */
 
         total += surcharge;
 
@@ -3094,7 +3095,7 @@ cc.define('cc.BasketService', function(storageService, configService, options){
             total -= parseFloat(coupon.amount);
         });
 
-        vat += parseFloat(Math.round((shipping * shippingTax / (100 + shippingTax) ) * 100) / 100);
+        vat += parseFloat(Math.round((shipping * shippingTax / (100 + shippingTax)) * 100) / 100);
 
         var summary = {
             quantity: quantity,
@@ -3114,9 +3115,10 @@ cc.define('cc.BasketService', function(storageService, configService, options){
 
         return summary;
     };
-
     return self;
 });
+
+}(sofa));
 
 /**
  * @name CheckoutService
