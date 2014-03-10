@@ -16,9 +16,9 @@
     "sofa-device-service": "0.1.x",
     "sofa-url-parser-service": "~0.1.x",
     "sofa-search-service": "~0.1.x",
-    "sofa-tracking-service": "~0.1.x",
     "sofa-user-service": "~0.1.x",
-    "sofa-basket-service": "~0.1.x"
+    "sofa-basket-service": "~0.1.x",
+    "sofa-tracking": "~0.2.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
