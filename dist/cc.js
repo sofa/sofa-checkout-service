@@ -2288,6 +2288,134 @@ sofa.define('sofa.UrlParserService', function ($location) {
 ;(function (sofa, undefined) {
 
 'use strict';
+/* global sofa */
+/**
+ * @name UrlConstructionService
+ * @namespace sofa.UrlConstructionService
+ *
+ * @description
+ * As the name says. This service provides methods to construct URLs for
+ * different use cases.
+ */
+sofa.define('sofa.UrlConstructionService', function (configService) {
+    var self = {};
+
+    /**
+     * @method createUrlForProducts
+     * @memberof sofa.UrlConstructionService
+     *
+     * @description
+     * Creates url for products.
+     *
+     * @param {int} categoryUrlId Category url id.
+     * @return {string} Url
+     */
+    self.createUrlForProducts = function (categoryUrlId) {
+        return '/cat/' + categoryUrlId + '/products';
+    };
+
+    /**
+     * @method createUrlForProduct
+     * @memberof sofa.UrlConstructionService
+     *
+     * @description
+     * Creates url for a product.
+     *
+     * @param {product} product Product object.
+     * @return {string} Url
+     */
+    self.createUrlForProduct = function (product) {
+        return '/cat/' + product.categoryUrlId + '/product/' + product.urlKey;
+    };
+
+    /**
+     * @method createUrlForCategory
+     * @memberof sofa.UrlConstructionService
+     *
+     * @description
+     * Creates url for a category.
+     *
+     * @param {int} categoryUrlId Category url id.
+     * @return {string} Url
+     */
+    self.createUrlForCategory = function (categoryUrlId) {
+        return '/cat/' + categoryUrlId;
+    };
+
+    /**
+     * @method createUrlForRootCategory
+     * @memberof sofa.UrlConstructionService
+     *
+     * @description
+     * Creates url for root category.
+     *
+     * @return {string} Url
+     */
+    self.createUrlForRootCategory = function () {
+        return '';
+    };
+
+    /**
+     * @method createUrlForCart
+     * @memberof sofa.UrlConstructionService
+     *
+     * @description
+     * Creates url for cart.
+     *
+     * @return {string} Url
+     */
+    self.createUrlForCart = function () {
+        return '/cart';
+    };
+
+    /**
+     * @method createUrlForCheckout
+     * @memberof sofa.UrlConstructionService
+     *
+     * @description
+     * Creates url for checkout.
+     *
+     * @return {string} Url
+     */
+    self.createUrlForCheckout = function () {
+        return '/checkout';
+    };
+
+    /**
+     * @method createUrlForSummary
+     * @memberof sofa.UrlConstructionService
+     *
+     * @description
+     * Creates url for summary.
+     *
+     * @param {string} token Summary token.
+     * @return {string} Url
+     */
+    self.createUrlForSummary = function (token) {
+        return '/summary/' + token;
+    };
+
+    /**
+     * @method createUrlForShippingCostsPage
+     * @memberof sofa.UrlConstructionService
+     *
+     * @description
+     * Creates url for shipping costs page.
+     *
+     * @return {string} Url
+     */
+    self.createUrlForShippingCostsPage = function () {
+        return '/pages/' + configService.get('linkShippingCosts', '');
+    };
+
+    return self;
+});
+
+} (sofa));
+
+;(function (sofa, undefined) {
+
+'use strict';
 /**
  * @name SearchService
  * @namespace sofa.SearchService
@@ -2411,6 +2539,135 @@ sofa.define('sofa.SearchService', function (configService, $http, $q, applier) {
 
 'use strict';
 /* global sofa */
+/* global document */
+/* global window */
+/* global Image */
+/* global _gaq */
+/* global location */
+/**
+ * @name GoogleAnalyticsTracker
+ * @namespace sofa.tracking.GoogleAnalyticsTracker
+ *
+ * @description
+ * A Google Analytics Tracker abstraction layer to connect to the SDK's
+ * tracker interface.
+ */
+sofa.define('sofa.tracking.GoogleAnalyticsTracker', function (options) {
+
+    var self = {};
+
+    /**
+     * @method setup
+     * @memberof sofa.tracking.GoogleAnalyticsTracker
+     *
+     * @description
+     * Sets up Google Analytics tracking code snippet with provided client
+     * information like account number and domain name.
+     */
+    self.setup = function () {
+        var _gaq = self._gaq = window._gaq = window._gaq || [];
+
+        _gaq.push(['_setAccount', options.accountNumber]);
+        _gaq.push(['_setDomainName', options.domainName]);
+        _gaq.push(['_setAllowLinker', true]);
+
+        var ga = document.createElement('script');
+        ga.type = 'text/javascript';
+        ga.async = true;
+        ga.src = ('https:' === document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(ga, s);
+    };
+
+    /**
+     * @method trackEvent
+     * @memberof sofa.tracking.GoogleAnalyticsTracker
+     *
+     * @description
+     * Explicit event tracking. This method pushes tracking data
+     * to Google Analytics.
+     *
+     * @param {object} eventData Event data object.
+     */
+    self.trackEvent = function (eventData) {
+
+        eventData.category = eventData.category || '';
+        eventData.action = eventData.action || '';
+        eventData.label = eventData.label || '';
+        eventData.value = eventData.value || '';
+
+        var dataToBePushed = [];
+
+        if (eventData.category === 'pageView') {
+            dataToBePushed.push('_trackPageview');
+            dataToBePushed.push(eventData.label);
+        } else {
+            // https://developers.google.com/analytics/devguides/collection/gajs/eventTrackerGuide
+            dataToBePushed.push('_trackEvent');
+            dataToBePushed.push(eventData.category);
+            dataToBePushed.push(eventData.action);
+            dataToBePushed.push(eventData.label);
+
+            // value is optional
+            if (eventData.value) {
+                dataToBePushed.push(eventData.value);
+            }
+
+            if (eventData.action === 'google_conversion' && options.conversionId) {
+                var url = 'http://www.googleadservices.com/pagead/conversion/' +
+                    options.conversionId + '/?value=' + eventData.value + '&label=' +
+                    options.conversionLabel + '&guid=ON&script=0';
+                var image = new Image(1, 1);
+                image.src = url;
+            }
+        }
+
+        _gaq.push(dataToBePushed);
+    };
+
+    /**
+     * @method trackEvent
+     * @memberof sofa.tracking.GoogleAnalyticsTracker
+     *
+     * @description
+     * Pushes transaction data using the Google Analytics Ecommerce Tracking API
+     *
+     * @param {object} transactionData Transaction data object.
+     */
+    self.trackTransaction = function (transactionData) {
+        _gaq.push(['_gat._anonymizeIp']);
+        _gaq.push(['_addTrans',
+            transactionData.token,               // transaction ID - required
+            location.host,                       // affiliation or store name
+            transactionData.totals.subtotal,     // total - required; Shown as "Revenue" in the
+                                                 // Transactions report. Does not include Tax and Shipping.
+            transactionData.totals.vat,          // tax
+            transactionData.totals.shipping,     // shipping
+            '',                                  // city
+            '',                                  // state or province
+            transactionData.billing.countryname, // country
+        ]);
+
+        transactionData.items.forEach(function (item) {
+            _gaq.push(['_addItem',
+                transactionData.token,           // transaction ID - necessary to associate item with transaction
+                item.productId,                  // SKU/code - required
+                item.name,                       // product name - necessary to associate revenue with product
+                '',                              // category or variation
+                item.price,                      // unit price - required
+                item.qty                         // quantity - required
+            ]);
+        });
+
+        _gaq.push(['_trackTrans']);
+
+    };
+
+    return self;
+});
+
+'use strict';
+/* global sofa */
 /**
  * @name TrackingService
  * @namespace sofa.TrackingService
@@ -2419,7 +2676,7 @@ sofa.define('sofa.SearchService', function (configService, $http, $q, applier) {
  * Abstraction layer to communicate with concrete tracker services
  * like Google Analytics.
  */
-sofa.define('sofa.TrackingService', function ($window, $http, configService) {
+sofa.define('sofa.tracking.TrackingService', function ($window, $http, configService) {
 
     var self = {};
     var trackers = self.__trackers = [];
@@ -4126,253 +4383,6 @@ cc.define('cc.PagesService', function($http, $q, configService){
         });
 
         return page.length > 0 && page[0];
-    };
-
-    return self;
-});
-
-/**
- * @name GoogleAnalyticsTracker
- * @namespace cc.tracker.GoogleAnalyticsTracker
- *
- * @description
- * A Google Analytics Tracker abstraction layer to connect to the SDK's
- * tracker interface.
- */
-cc.define('cc.tracker.GoogleAnalyticsTracker', function(options) {
-    'use strict';
-
-    var self = {};
-
-    /**
-     * @method setup
-     * @memberof cc.tracker.GoogleAnalyticsTracker
-     *
-     * @description
-     * Sets up Google Analytics tracking code snippet with provided client
-     * information like account number and domain name.
-     */
-    self.setup = function() {
-        var _gaq = self._gaq = window._gaq = window._gaq || [];
-
-        _gaq.push(['_setAccount', options.accountNumber]);
-        _gaq.push(['_setDomainName', options.domainName]);
-        _gaq.push(['_setAllowLinker', true]);
-
-        var ga = document.createElement('script');
-        ga.type = 'text/javascript';
-        ga.async = true;
-        ga.src = ('https:' === document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0];
-        s.parentNode.insertBefore(ga, s);
-    };
-
-    /**
-     * @method trackEvent
-     * @memberof cc.tracker.GoogleAnalyticsTracker
-     *
-     * @description
-     * Explicit event tracking. This method pushes tracking data
-     * to Google Analytics.
-     *
-     * @param {object} eventData Event data object.
-     */
-    self.trackEvent = function(eventData) {
-
-        eventData.category = eventData.category || '';
-        eventData.action = eventData.action || '';
-        eventData.label = eventData.label || '';
-        eventData.value = eventData.value || '';
-
-        var dataToBePushed = [];
-
-        if (eventData.category === 'pageView') {
-            dataToBePushed.push('_trackPageview');
-            dataToBePushed.push(eventData.label);
-        }
-        else {
-            // https://developers.google.com/analytics/devguides/collection/gajs/eventTrackerGuide
-            dataToBePushed.push('_trackEvent');
-            dataToBePushed.push(eventData.category);
-            dataToBePushed.push(eventData.action);
-            dataToBePushed.push(eventData.label);
-
-            // value is optional
-            if (eventData.value) {
-                dataToBePushed.push(eventData.value);
-            }
-
-            if ( eventData.action === 'google_conversion' && options.conversionId ) {
-                var url = 'http://www.googleadservices.com/pagead/conversion/'+
-                    options.conversionId+'/?value='+eventData.value+'&label='+
-                    options.conversionLabel+'&guid=ON&script=0';
-                var image = new Image(1,1);
-                image.src = url;
-            }
-        }
-
-        _gaq.push(dataToBePushed);
-
-    };
-
-    /**
-     * @method trackEvent
-     * @memberof cc.tracker.GoogleAnalyticsTracker
-     *
-     * @description
-     * Pushes transaction data using the Google Analytics Ecommerce Tracking API
-     *
-     * @param {object} transactionData Transaction data object.
-     */
-    self.trackTransaction = function(transactionData) {
-        _gaq.push(['_gat._anonymizeIp']);
-        _gaq.push(['_addTrans',
-            transactionData.token,               // transaction ID - required
-            location.host,                       // affiliation or store name
-            transactionData.totals.subtotal,     // total - required; Shown as "Revenue" in the
-                                                 // Transactions report. Does not include Tax and Shipping.
-            transactionData.totals.vat,          // tax
-            transactionData.totals.shipping,     // shipping
-            '',                                  // city
-            '',                                  // state or province
-            transactionData.billing.countryname, // country
-        ]);
-
-        transactionData.items.forEach(function(item) {
-            _gaq.push(['_addItem',
-                transactionData.token,           // transaction ID - necessary to associate item with transaction
-                item.productId,                  // SKU/code - required
-                item.name,                       // product name - necessary to associate revenue with product
-                '',                              // category or variation
-                item.price,                      // unit price - required
-                item.qty                         // quantity - required
-            ]);
-        });
-
-        _gaq.push(['_trackTrans']);
-
-    };
-
-    return self;
-});
-
-/**
- * @name UrlConstructionService
- * @namespace cc.UrlConstructionService
- *
- * @description
- * As the name says. This service provides methods to construct URLs for
- * different use cases.
- */
-cc.define('cc.UrlConstructionService', function(configService){
-    var self = {};
-
-    /**
-     * @method createUrlForProducts
-     * @memberof cc.UrlConstructionService
-     *
-     * @description
-     * Creates url for products.
-     *
-     * @param {int} categoryUrlId Category url id.
-     * @return {string} Url
-     */
-    self.createUrlForProducts = function(categoryUrlId){
-        return '/cat/' + categoryUrlId + '/products';
-    };
-
-    /**
-     * @method createUrlForProduct
-     * @memberof cc.UrlConstructionService
-     *
-     * @description
-     * Creates url for a product.
-     *
-     * @param {product} product Product object.
-     * @return {string} Url
-     */
-    self.createUrlForProduct = function(product){
-        return '/cat/' + product.categoryUrlId + '/product/' + product.urlKey;
-    };
-
-    /**
-     * @method createUrlForCategory
-     * @memberof cc.UrlConstructionService
-     *
-     * @description
-     * Creates url for a category.
-     *
-     * @param {int} categoryUrlId Category url id.
-     * @return {string} Url
-     */
-    self.createUrlForCategory = function(categoryUrlId){
-        return '/cat/' + categoryUrlId;
-    };
-
-    /**
-     * @method createUrlForRootCategory
-     * @memberof cc.UrlConstructionService
-     *
-     * @description
-     * Creates url for root category.
-     *
-     * @return {string} Url
-     */
-    self.createUrlForRootCategory = function(){
-        return '';
-    };
-
-    /**
-     * @method createUrlForCart
-     * @memberof cc.UrlConstructionService
-     *
-     * @description
-     * Creates url for cart.
-     *
-     * @return {string} Url
-     */
-    self.createUrlForCart = function(){
-        return '/cart';
-    };
-
-    /**
-     * @method createUrlForCheckout
-     * @memberof cc.UrlConstructionService
-     *
-     * @description
-     * Creates url for checkout.
-     *
-     * @return {string} Url
-     */
-    self.createUrlForCheckout = function(){
-        return '/checkout';
-    };
-
-    /**
-     * @method createUrlForSummary
-     * @memberof cc.UrlConstructionService
-     *
-     * @description
-     * Creates url for summary.
-     *
-     * @param {string} token Summary token.
-     * @return {string} Url
-     */
-    self.createUrlForSummary = function(token){
-        return '/summary/' + token;
-    };
-
-    /**
-     * @method createUrlForShippingCostsPage
-     * @memberof cc.UrlConstructionService
-     *
-     * @description
-     * Creates url for shipping costs page.
-     *
-     * @return {string} Url
-     */
-    self.createUrlForShippingCostsPage = function(){
-        return '/pages/' + configService.get('linkShippingCosts', '');
     };
 
     return self;
