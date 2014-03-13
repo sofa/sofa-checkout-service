@@ -119,7 +119,6 @@ asyncTest('getSupportCheckoutMethod sends correct data to the backend (address e
     // it's easier to compare the JavaScript objects here instead of the raw JSON strings.
     deepEqual(JSON.parse(data.invoiceAddress),mrPinkBackendRepresentation, 'sends invoice address correctly');
     // it's crucial to check that the shipping Address will be the same as the invoice address if `addressEqual` is true
-    // TODO: add another test where `addressEqual` is false
     deepEqual(JSON.parse(data.shippingAddress),mrPinkBackendRepresentation, 'sends shipping address correctly');
     ok(data.quote === '[{"productID":"10","qty":1,"variantID":null,"optionID":null}]', 'sends quote data correctly');
 });
@@ -171,6 +170,49 @@ asyncTest('getSupportCheckoutMethod sends correct data to the backend (address n
     deepEqual(JSON.parse(data.invoiceAddress),mrPinkBackendRepresentation, 'sends invoice address correctly');
     // it's crucial to check that the shipping Address will NOT be the same as the invoice address if `addressEqual` is false
     deepEqual(JSON.parse(data.shippingAddress),mrPinkGermanyBackendRepresentation, 'sends shipping address correctly');
+    ok(data.quote === '[{"productID":"10","qty":1,"variantID":null,"optionID":null}]', 'sends quote data correctly');
+});
+
+asyncTest('getShippingMethodsForPayPal sends correct data to the backend', function() {
+    expect(6);
+
+    var httpService = createHttpService();
+
+    httpService
+        .when('POST', cc.Config.checkoutUrl + 'ajax.php')
+        .respond({});
+
+    var basketService = new cc.BasketService(new cc.LocalStorageService(), new cc.ConfigService());
+    basketService.clear();
+    var product = new cc.models.Product();
+    product.name = 'Testproduct';
+    product.id = 10;
+
+    var basketItem = basketService.addItem(product, 1);
+
+    var checkoutService = createCheckoutService(httpService, basketService);
+
+    checkoutService
+        .getShippingMethodsForPayPal()
+        .then(function(data){
+            ok(data === null, "returns data");
+            start();
+        });
+
+    var httpConfig = httpService.getLastCallParams();
+    var data = httpConfig.data;
+
+    var expectedAddress = {
+        country: 'DE',
+        countryLabel: 'Deutschland'
+    };
+
+    ok(data.task === 'GETPAYMENTMETHODS', 'sets correct task');
+    // // it's easier to compare the JavaScript objects here instead of the raw JSON strings.
+    deepEqual(JSON.parse(data.invoiceAddress), expectedAddress, 'sends invoice address correctly');
+    // // it's crucial to check that the shipping Address will be the same as the invoice address if `addressEqual` is true
+    deepEqual(JSON.parse(data.shippingAddress),expectedAddress, 'sends shipping address correctly');
+    ok(data.paymentMethod === 'paypal_express');
     ok(data.quote === '[{"productID":"10","qty":1,"variantID":null,"optionID":null}]', 'sends quote data correctly');
 });
 

@@ -3448,6 +3448,9 @@ cc.define('cc.CheckoutService', function($http, $q, basketService, loggingServic
         if (modelCopy.selectedPaymentMethod && modelCopy.selectedPaymentMethod.method){
             requestModel.paymentMethod = modelCopy.selectedPaymentMethod.method;
         }
+        else{
+            requestModel.paymentMethod = modelCopy.selectedPaymentMethod;
+        }
 
         if(modelCopy.selectedShippingMethod && modelCopy.selectedShippingMethod.method){
             requestModel.shippingMethod = modelCopy.selectedShippingMethod.method;
