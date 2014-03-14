@@ -81,4 +81,12 @@
             top: $cc-select-box__height;
         }
     }
+
+    .cc-select-box__display-value {
+        display:block;
+        max-width:85%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
