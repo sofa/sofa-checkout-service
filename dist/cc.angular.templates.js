@@ -118,16 +118,14 @@ angular.module("src/directives/ccPrice/cc-price.tpl.html", []).run(["$templateCa
     "\n" +
     "    <span ng-if=\"product.hasOldPrice()\">\n" +
     "\n" +
-    "        <span class=\"cc-price__price--old\" ng-bind=\"product.priceOld | currency\"></span>\n" +
+    "        <span class=\"cc-price__price--old\" ng-bind=\"priceOld | currency\"></span>\n" +
     "\n" +
-    "        <span class=\"cc-price__price--special\" ng-bind=\"product.price | currency\"></span>\n" +
+    "        <span class=\"cc-price__price--special\" ng-bind=\"price | currency\"></span>\n" +
     "\n" +
     "    </span>\n" +
     "\n" +
     "    <span ng-if=\"!product.hasOldPrice()\">\n" +
-    "\n" +
-    "        <span class=\"cc-price__price\" ng-bind=\"product.price | currency\"></span>\n" +
-    "\n" +
+    "        <span class=\"cc-price__price\" ng-bind=\"price | currency\"></span>\n" +
     "    </span>\n" +
     "\n" +
     "</span>\n" +

@@ -1106,7 +1106,6 @@ asyncTest('getSupportCheckoutMethod sends correct data to the backend (address e
     // it's easier to compare the JavaScript objects here instead of the raw JSON strings.
     deepEqual(JSON.parse(data.invoiceAddress),mrPinkBackendRepresentation, 'sends invoice address correctly');
     // it's crucial to check that the shipping Address will be the same as the invoice address if `addressEqual` is true
-    // TODO: add another test where `addressEqual` is false
     deepEqual(JSON.parse(data.shippingAddress),mrPinkBackendRepresentation, 'sends shipping address correctly');
     ok(data.quote === '[{"productID":"10","qty":1,"variantID":null,"optionID":null}]', 'sends quote data correctly');
 });
@@ -1199,7 +1198,6 @@ asyncTest('getShippingMethodsForPayPal sends correct data to the backend', funct
     // // it's easier to compare the JavaScript objects here instead of the raw JSON strings.
     deepEqual(JSON.parse(data.invoiceAddress), expectedAddress, 'sends invoice address correctly');
     // // it's crucial to check that the shipping Address will be the same as the invoice address if `addressEqual` is true
-    // // TODO: add another test where `addressEqual` is false
     deepEqual(JSON.parse(data.shippingAddress),expectedAddress, 'sends shipping address correctly');
     ok(data.paymentMethod === 'paypal_express');
     ok(data.quote === '[{"productID":"10","qty":1,"variantID":null,"optionID":null}]', 'sends quote data correctly');
