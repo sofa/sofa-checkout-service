@@ -3929,7 +3929,7 @@ angular.module('sdk.directives.ccPrice')
                 // the variant and then update the price on our isolated scope.
                 var updatePrices = function() {
                     $scope.price = $scope.product.price;
-                    $scope.oldPrice = $scope.product.oldPrice;
+                    $scope.priceOld = $scope.product.priceOld;
 
                     if ($scope.selectedVariant && $scope.selectedVariant.price !== undefined) {
                         $scope.price = $scope.selectedVariant.price;
