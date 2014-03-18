@@ -1,5 +1,5 @@
 
-angular.module('sdk.directives.ccCheckBox', ['src/directives/ccCheckBox/cccheckbox.tpl.html']);
+angular.module('sdk.directives.ccCheckBox', ['src/directives/ccCheckBox/cc-checkbox.tpl.html']);
 
 angular.module('sdk.directives.ccCheckBox')
     .directive('ccCheckBox', function() {
@@ -15,7 +15,7 @@ angular.module('sdk.directives.ccCheckBox')
                 label: '=?',
                 value: '=?'
             },
-            templateUrl: 'src/directives/ccCheckBox/cccheckbox.tpl.html',
+            templateUrl: 'src/directives/ccCheckBox/cc-checkbox.tpl.html',
             link: function(scope, $element, attrs){
                 instanceCount++;
                 scope.id = instanceCount;
