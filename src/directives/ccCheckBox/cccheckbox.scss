@@ -1,5 +1,12 @@
 @import 'checkbox_topcoat.scss';
 
+$cc-check-box__background: #fff;
+$cc-check-box__border-color: #ddd;
+$cc-check-box__border-radius: 15px;
+$cc-check-box__checkmark-color: #000;
+$cc-check-box__border-color--highlight: #E18073;
+$cc-check-box__context-color: #000;
+
 .topcoat-checkbox__checkmark:after {
     //not sure why we need to adjust the checkmark but it looks oddly placed otherwise
     left: 6px;

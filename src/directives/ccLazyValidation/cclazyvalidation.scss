@@ -1,46 +1,47 @@
+
 .cc-validation{
     position: relative;
 }
 
-.cc-validation__message--success{
+.cc-validation__message--success {
     display: none;
     position: absolute;
     right: 5px;
     //set line-height to the height of the text-box
-    line-height: 50px;
-    color: $cc-validation__success-message-color;
+    line-height: 46px;
+    color: #468847;
 }
 
-.cc-validation__message--fail{
+.cc-validation__message--fail {
     display: none;
-    background: $cc-validation__warning-message-background-color;
+    background: #F2DEDE;
     padding: 10px;
     border-radius: 5px;
     margin: 10px;
     position: relative;
-    color: $cc-validation__warning-message-color;
+    color: #B94A48;
 }
 
-.cc-validation__message--fail:before{
-    width: 0;
-    height: 0;
-    border-bottom: 20px solid $cc-validation__warning-message-background-color;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
+.cc-validation__message--fail:before {
     content: "";
     position: absolute;
-    top: -10px;
-    left: 10px
+    width: 16px;
+    height: 16px;
+    top: -9px;
+    left: 15px;
+    background: #F2DEDE;
+    -webkit-transform: rotate(45deg);
+            transform: rotate(45deg);
 }
 
-.cc-valid >{
-    .cc-validation__message--success{
+.cc-valid {
+    & > .cc-validation__message--success {
         display: inline-block;
     }
 }
 
-.cc-invalid >{
-    .cc-validation__message--fail{
+.cc-invalid {
+    & > .cc-validation__message--fail {
         display: inline-block;
     }
 }
