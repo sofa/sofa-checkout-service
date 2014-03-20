@@ -355,6 +355,10 @@ angular
             $location.path(url);
         };
 
+        self.navigateToContentPage = function (pageId) {
+            navigateToUrl(urlConstructionService.createUrlForContentPage(pageId));
+        };
+
         self.navigateToProducts = function(categoryUrlId){
             navigateToUrl(urlConstructionService.createUrlForProducts(categoryUrlId));
         };
