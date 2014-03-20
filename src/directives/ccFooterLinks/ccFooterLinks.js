@@ -5,7 +5,7 @@ angular.module('sdk.directives.ccFooterLinks', [
 
 angular
     .module('sdk.directives.ccFooterLinks')
-    .directive('ccFooterLinks', ['configService', function(configService) {
+    .directive('ccFooterLinks', ['configService', 'navigationService', function(configService, navigationService) {
 
         'use strict';
 
@@ -27,7 +27,7 @@ angular
                 defaultIfUndefined(scope, 'items', ABOUT_PAGES);
 
                 scope.goTo = function(item){
-                    window.location.href = '#/pages/' + item.id;
+                    navigationService.navigateToContentPage(item.id);
                 };
             }
         };
