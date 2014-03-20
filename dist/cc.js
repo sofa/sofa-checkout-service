@@ -2852,6 +2852,14 @@ sofa.define('sofa.UserService', function (storageService, configService) {
 
 } (sofa));
 
+/**
+ * sofa-basket-service - v0.1.3 - 2014-03-19
+ * http://www.sofa.io
+ *
+ * Copyright (c) 2013 CouchCommerce GmbH (http://www.couchcommerce.org) and other contributors
+ * THIS SOFTWARE CONTAINS COMPONENTS OF THE SOFA SDK (SOFA.IO).
+ * IT IS PROVIDED UNDER THE LICENSE TERMS OF THE ATTACHED LICENSE.TXT.
+ */
 ;(function (sofa, undefined) {
 
 'use strict';
@@ -3337,7 +3345,7 @@ sofa.define('sofa.BasketService', function (storageService, configService, optio
             shipping = options.shippingMethod.price;
         }
 
-        total = sum + shipping + discount;
+        total = sum + discount;
 
         /* jshint camelcase: false */
         if (surcharge_percentage) {
@@ -3345,7 +3353,7 @@ sofa.define('sofa.BasketService', function (storageService, configService, optio
         }
         /* jshint camelcase: true */
 
-        total += surcharge;
+        total += shipping + surcharge;
 
         // For each coupon, subtract the discount value
         activeCoupons.forEach(function (coupon) {
