@@ -1,48 +1,62 @@
 {
-  "name": "sofa-base",
-  "version": "0.0.0",
-  "description": "Frontend SDK for the CouchCommerce Plattform",
-  "main": "index.js",
+  "name": "sofa-checkout-service",
+  "version": "0.1.0",
+  "description": "Sofa Web SDK checkout service component.",
+  "main": "dist/sofa.checkoutService.js",
+  "homepage": "http://www.sofa.io",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bower install && grunt build"
   },
-  "repository": "",
-  "author": "",
-  "license": "MIT",
+  "engines": {
+    "node": ">=0.10.x",
+    "npm": ">=1.2.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sofa/sofa-checkout-service"
+  },
+  "keywords": [
+    "sofa",
+    "sofa.io",
+    "web",
+    "sdk",
+    "service"
+  ],
+  "author": "Pascal Precht <pascal@couchcommerce.com>",
+  "license": "GPL",
+  "bugs": {
+    "url": "https://github.com/sofa/sofa-checkout-service/issues"
+  },
   "dependencies": {
-    "sofa-core": "0.4.x",
-    "sofa-storages": "0.2.x",
+    "sofa-core": "0.6.x",
+    "sofa-http-service": "0.3.x",
     "sofa-logging-service": "0.1.x",
-    "sofa-device-service": "0.1.x",
-    "sofa-url-parser-service": "~0.1.x",
-    "sofa-search-service": "~0.1.x",
-    "sofa-user-service": "~0.1.x",
-    "sofa-basket-service": "~0.1.x",
-    "sofa-tracking": "~0.2.0",
-    "sofa-url-construction-service": "~0.2.0"
+    "sofa-basket-service": "0.1.x",
+    "sofa-q-service": "0.1.x",
+    "sofa-storages": "0.2.x"
   },
   "devDependencies": {
     "grunt": "~0.4.3",
-    "doxx": "~0.5.9",
-    "grunt-shell": "~0.2.2",
-    "grunt-contrib-clean": "~0.4.0",
-    "grunt-contrib-copy": "~0.4.0",
-    "grunt-contrib-jshint": "~0.8.0",
-    "grunt-contrib-concat": "~0.1.3",
-    "grunt-contrib-uglify": "~0.1.1",
+    "grunt-contrib-uglify": "~0.2.4",
     "grunt-html2js": "~0.1.4",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-copy": "~0.5.0",
+    "grunt-contrib-jshint": "~0.8.0",
+    "load-grunt-tasks": "~0.2.1",
+    "grunt-karma": "~0.8.0",
+    "grunt-contrib-cssmin": "~0.7.0",
+    "grunt-ngmin": "0.0.3",
     "grunt-contrib-watch": "~0.5.3",
-    "qunitjs": "~1.12.0",
-    "grunt-contrib-qunit": "~0.3.0",
-    "karma-script-launcher": "~0.1.0",
-    "karma-chrome-launcher": "~0.1.2",
-    "karma-firefox-launcher": "~0.1.3",
-    "karma-html2js-preprocessor": "~0.1.0",
-    "karma-jasmine": "~0.1.5",
-    "karma-requirejs": "~0.1.0",
-    "karma-coffee-preprocessor": "~0.1.0",
-    "karma-phantomjs-launcher": "~0.1.0",
+    "grunt-contrib-clean": "~0.5.0",
+    "lodash": "~2.4.1",
+    "grunt-contrib-sass": "~0.7.2",
+    "grunt-cli": "~0.1.13",
     "karma": "~0.12.0",
-    "grunt-karma": "~0.8.0"
+    "grunt-conventional-changelog": "~1.1.0",
+    "sofa-testing": "0.2.x",
+    "karma-jasmine": "~0.1.5",
+    "bower": "~1.2.8",
+    "karma-chrome-launcher": "~0.1.2",
+    "karma-firefox-launcher": "~0.1.3"
   }
 }

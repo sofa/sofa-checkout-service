@@ -1,187 +1,219 @@
-module.exports = function(grunt) {
+'use strict';
+/* jshint camelcase: false */
 
-    // Project configuration.
+module.exports = function (grunt) {
+
+    require('load-grunt-tasks')(grunt);
+
     grunt.initConfig({
+
         pkg: grunt.file.readJSON('package.json'),
-        ccName: 'cc',
-        ccTestsName: 'cc.tests',
-        ccAngularName: 'cc.angular',
-        distdir: 'dist',
-        src: {
-            cc: [
-              'node_modules/sofa-core/dist/sofa.core.js',
-              'node_modules/sofa-storages/dist/sofa.storages.js',
-              'node_modules/sofa-logging-service/dist/sofa.loggingService.js',
-              'node_modules/sofa-device-service/dist/sofa.deviceService.js',
-              'node_modules/sofa-url-parser-service/dist/sofa.urlParserService.js',
-              'node_modules/sofa-url-construction-service/dist/sofa.urlConstructionService.js',
-              'node_modules/sofa-search-service/dist/sofa.searchService.js',
-              'node_modules/sofa-tracking/dist/sofa.tracking.js',
-              'node_modules/sofa-user-service/dist/sofa.userService.js',
-              'node_modules/sofa-basket-service/dist/sofa.basketService.js',
-              'src/core/**/*.js'
-            ],
-            ccTests: ['test/**/*.js','!test/karma/**/*'],
-            ccAngular:  [
-                            'src/services/**/*.js',
-                            'src/directives/**/*.js',
-                            'src/decorators/**/*.js',
-                            'src/filter/**/*.js',
-                            '!src/**/demos/**/*'
-                        ],
-            ccTemplates: ['src/**/*.tpl.html', '!src/**/demos/**/*.tpl.html']
+        meta: {
+            banner:
+                '/**\n' +
+                ' * <%= pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n' +
+                ' * <%= pkg.homepage %>\n' +
+                ' *\n' +
+                ' * Copyright (c) 2013 CouchCommerce GmbH (http://www.couchcommerce.org) and other contributors\n' +
+                ' * THIS SOFTWARE CONTAINS COMPONENTS OF THE SOFA SDK (SOFA.IO).\n' +
+                ' * IT IS PROVIDED UNDER THE LICENSE TERMS OF THE ATTACHED LICENSE.TXT.\n' +
+                ' */\n'
         },
-        clean: ['<%= distdir %>/*'],
-        jshint: {
-          all: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js'],
-          options: {
-            eqeqeq: true,
-            globals: {
-              angular: true
-            },
-            ignores: [
-                'src/directives/ccElasticViews/hammer.js',
-                'src/core/store.js',
-                'test/mocks/md5.js',
-                //we also need to exclude those files as they contain foreign code
-                //and until jshint 1.0 there is no option to mute all warnings for a
-                //block of code
-                'src/core/cc.util.js',
-                'src/core/cc.observable.js'
-            ]
-          }
+        component_name: 'sofa.checkoutService',
+        component_sass_name: grunt.file.readJSON('bower.json').name,
+        build_dir: 'dist',
+
+        clean: {
+            build: {
+                src: '<%= build_dir %>'
+            }
         },
+
         html2js: {
-            app: {
+            src: {
                 options: {
-                    base: '.'
+                    base: 'src'
                 },
-                src: ['<%= src.ccTemplates %>'],
-                dest: '<%= distdir %>/cc.angular.templates.js',
-                module: 'cc.angular.templates'
+                src: ['src/**/*.tpl.html'],
+                dest: '<%= build_dir %>/<%= component_name %>.templates.js',
+                module: '<%= component_name %>.templates'
             }
         },
-        concat:{
-            dist:{
-                src:[
-                        'build.cc.intro.js',
-                        '<%= src.cc %>',
-                        'build.cc.outro.js'
-                    ],
-                dest:'<%= distdir %>/<%= ccName %>.js'
+
+        jshint: {
+            options: {
+                jshintrc: '.jshintrc'
             },
-            ccTests:{
-                src:['<%= src.ccTests %>'],
-                dest:'<%= distdir %>/<%= ccTestsName %>.js'
+
+            src: {
+                files: {
+                    src: ['src/**/*.js']
+                }
             },
-            ccAngular:{
-                src:[
-                        'build.intro.js',
-                        '<%= distdir %>/cc.angular.templates.js',
-                        '<%= src.ccAngular %>',
-                        'build.outro.js',
-                    ],
-                dest:'<%= distdir %>/<%= ccAngularName %>.js'
+
+            test_unit: {
+                files: {
+                    src: ['test/**/*.spec.js']
+                }
+            },
+
+            gruntfile: {
+                files: {
+                    src: ['Gruntfile.js']
+                }
             }
         },
-        qunit: {
-            all: ['test/**/*.html']
+
+        sass: {
+            build: {
+                options: {
+                    style: 'expanded'
+                },
+                files: {
+                    '<%= build_dir %>/<%= component_sass_name %>.css': 'src/<%= component_sass_name %>.scss',
+                    '<%= build_dir %>/<%= component_sass_name %>-default.css': 'src/<%= component_sass_name %>-default.scss'
+                }
+            }
         },
+
+        copy: {
+            build: {
+                files: [
+                    {
+                        src: ['**/*.js'],
+                        dest: '<%= build_dir %>/',
+                        cwd: 'src',
+                        expand: true
+                    }
+                ]
+            }
+        },
+
         karma: {
             options: {
-                files:  [
-                            'vendor/angular.js',
-                            'vendor/angular-sanitize.js',
-                            'vendor/angular-mocks.js',
-                            'vendor/angular-scenario.js',
-                            //the test config
-                            'node_modules/sofa-core/dist/sofa.core.js',
-                            'node_modules/sofa-storages/dist/sofa.storages.js',
-                            'node_modules/sofa-logging-service/dist/sofa.loggingService.js',
-                            'node_modules/sofa-device-service/dist/sofa.deviceService.js',
-                            'node_modules/sofa-url-parser-service/dist/sofa.urlParserService.js',
-                            'node_modules/sofa-url-construction-service/dist/sofa.urlConstructionService.js',
-                            'node_modules/sofa-search-service/dist/sofa.searchService.js',
-                            'node_modules/sofa-tracking/dist/sofa.tracking.js',
-                            'node_modules/sofa-user-service/dist/sofa.userService.js',
-                            'node_modules/sofa-basket-service/dist/sofa.basketService.js',
-                            'test/cc.config.js',
-                            'src/core/**/*.js',
-                            //how could we just link to src.ccAngular here?
-                            'src/services/**/*.js',
-                            'src/directives/**/*.js',
-                            'src/decorators/**/*.js',
-                            'src/filter/**/*.js',
-                            '<%= distdir %>/cc.angular.templates.js',
-                            //the actual test files
-                            'test/karma/**/*.spec.js'
-                        ],
-                basePath: '',
-                frameworks: ['jasmine'],
-                reporters: ['progress'],
-                port: 9876,
-                colors: true,
-                //logLevel: config.LOG_INFO,
-                autoWatch: true,
-                browsers: ['Chrome'],
-                captureTimeout: 60000
+                configFile: 'karma.conf.js'
             },
-            dev: {
-                singleRun: false
+            unit: {
+                port: 9101,
+                background: true
             },
-            build: {
+            continuous: {
                 singleRun: true
             }
         },
-        watch:{
-            all: {
-                files:['<%= src.cc %>', '<%= src.ccAngular %>', '<%= src.ccTests %>', '<%= src.ccTemplates %>'],
-                tasks:['jshint','build']
+
+        cssmin: {
+            compile: {
+                options: {
+                    report: 'gzip'
+                },
+                files: {
+                    '<%= build_dir %>/<%= component_sass_name %>.css': 'src/<%= component_sass_name %>.css',
+                    '<%= build_dir %>/<%= component_sass_name %>-default.css': 'src/<%= component_sass_name %>-default.css'
+                }
             }
         },
-        script:{
-            cc:{
-                src: ['<%= src.cc %>', '<%= src.ccTests %>'],
-                relativeTo: 'test/unit/'
+
+        ngmin: {
+            compile: {
+                files: [
+                    {
+                        src: ['**/*.js'],
+                        cwd: '<%= build_dir %>',
+                        dest: '<%= build_dir %>',
+                        expand: true
+                    }
+                ]
+            }
+        },
+
+        concat: {
+            options: {
+                banner: '<%= meta.banner %>'
+            },
+            compile_js: {
+                src: [
+                    'component.prefix',
+                    'src/**/*.js',
+                    '<%= html2js.src.dest %>',
+                    'component.suffix'
+                ],
+                dest: '<%= build_dir %>/<%= component_name %>.js'
+            },
+        },
+
+        uglify: {
+            compile: {
+                options: {
+                    banner: '<%= meta.banner %>'
+                },
+                files: {
+                    '<%= build_dir %>/<%= component_name %>.min.js': '<%= concat.compile_js.dest %>'
+                }
+            },
+        },
+
+        changelog: {
+            options: {
+                dest: 'CHANGELOG.md'
+            }
+        },
+
+        delta: {
+
+            gruntfile: {
+                files: 'Gruntfile.js',
+                tasks: ['jshint:gruntfile'],
+                options: {
+                    livereload: false
+                }
+            },
+
+            jssrc: {
+                files: [
+                    'src/**/*.js'
+                ],
+                tasks: ['jshint:src', 'karma:unit:run', 'ngmin', 'concat:compile_js', 'uglify:compile']
+            },
+
+            tpls: {
+                files: [
+                    '<%= html2js.src.src %>'
+                ],
+                tasks: ['html2js', 'concat:compile_js', 'uglify:compile']
+            },
+
+            jsunit: {
+                files: [
+                    'test/**/*.spec.js'
+                ],
+                tasks: ['jshint:test_unit', 'karma:unit:run']
             }
         }
     });
 
-    grunt.loadNpmTasks('grunt-shell');
-    grunt.loadNpmTasks('grunt-contrib-qunit');
-    grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-html2js');
-    grunt.loadNpmTasks('grunt-karma');
+    grunt.registerTask('default', 'build');
+    grunt.renameTask('watch', 'delta');
 
-    grunt.registerTask('index-template-tests', function(){
-        
-        var indexPath = 'test/unit/';
-        var indexContents = grunt.file.read(indexPath + 'index.tpl');
-        var transformedContents = grunt.template.process(indexContents, { data: grunt.config.get('script.cc') });
-        grunt.file.write(indexPath + 'index.html', transformedContents);
-    });
+    grunt.registerTask('watch', [
+        'build',
+        'karma:unit',
+        'delta'
+    ]);
 
-    grunt.registerMultiTask('script', function(){
-        var path = require('path');
-        var relativeTo = this.data.relativeTo || '';
-        var scriptTags = this.filesSrc
-                             .map(function(val){ 
-                                return '<script src="' + path.relative(relativeTo, val) + '"></script>'; 
-                             })
-                             .join('\n');
+    grunt.registerTask('test', [
+        'jshint',
+        'karma:continuous'
+    ]);
 
-        var configProperty = this.name + '.' + this.target + '.scripts';
-
-        grunt.config.set(configProperty, scriptTags);
-    });
-
-    // Default task(s).
-    grunt.registerTask('default', ['jshint', 'build', 'watch']);
-    grunt.registerTask('build', ['clean', 'html2js', 'concat', 'script', 'index-template-tests', 'qunit', 'karma:build']);
-
+    grunt.registerTask('build', [
+        'clean',
+        'jshint',
+        'sass',
+        'karma:continuous',
+        'cssmin:compile',
+        'ngmin',
+        'concat:compile_js',
+        'uglify:compile'
+    ]);
 };

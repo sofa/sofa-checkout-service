@@ -10,3 +10,4 @@ build.xml
 app/css/*
 sdk/test/unit/index.html
 node_modules
+bower_components
