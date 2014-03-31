@@ -54,6 +54,24 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         var modelCopy = sofa.Util.clone(checkoutModel);
         var requestModel = {};
 
+        var convertBirthDay = function (model) {
+            // Convert the birthday into the yyyy-mm-dd format
+            if (model &&
+                model.birthday &&
+                model.birthmonth &&
+                model.birthyear) {
+                model.birthdate = sofa.Util.zeroFill(model.birthyear, 4) + '-' +
+                    sofa.Util.zeroFill(model.birthmonth.value, 2) + '-' +
+                    sofa.Util.zeroFill(model.birthday, 2);
+                delete model.birthday;
+                delete model.birthmonth;
+                delete model.birthyear;
+            }
+        };
+
+        convertBirthDay(modelCopy.billingAddress);
+        convertBirthDay(modelCopy.shippingAddress);
+
         if (modelCopy.billingAddress && modelCopy.billingAddress.country) {
             modelCopy.billingAddress.country = checkoutModel.billingAddress.country.value;
             modelCopy.billingAddress.countryLabel = checkoutModel.billingAddress.country.label;
@@ -77,6 +95,9 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         }
 
         requestModel.quote = JSON.stringify(self.createQuoteData());
+
+        requestModel.pseudocardpan = modelCopy.pseudocardpan;
+        requestModel.truncatedcardpan = modelCopy.truncatedcardpan;
 
         var coupons = basketService.getActiveCoupons().map(function (coupon) {
             return coupon.code;
@@ -343,7 +364,9 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
             salutation:         safeUse(backendAddress.salutation),
             surname:            safeUse(backendAddress.lastname),
             name:               safeUse(backendAddress.firstname),
-            street:             safeUse(backendAddress.street1),
+            street:             safeUse(backendAddress.street),
+            streetnumber:       safeUse(backendAddress.streetnumber),
+            streetextra:        safeUse(backendAddress.streetextra),
             zip:                safeUse(backendAddress.zip),
             city:               safeUse(backendAddress.city),
             country:            !country.value ? null : country,

@@ -7,7 +7,9 @@ var mrPinkAppRepresentation = {
     salutation: 'Mr',
     surname: 'Pink',
     name: 'John',
-    street: 'The mission 1',
+    street: 'The mission',
+    streetnumber: '1',
+    streetextra: 'block C',
     city: 'San Francisco',
     zip: '5677732',
     country: {value: 'US', label: 'United States'},
@@ -21,7 +23,9 @@ var mrPinkBackendRepresentation = {
     "salutation":"Mr",
     "surname":"Pink",
     "name":"John",
-    "street":"The mission 1",
+    "street":"The mission",
+    "streetnumber":"1",
+    "streetextra":"block C",
     "city":"San Francisco",
     "zip":"5677732",
     "country":"US",
@@ -134,7 +138,7 @@ describe('sofa.checkoutService', function () {
         });
 
         async.it('getSummary transforms addresses in standard format', function (done) {
-            var response = '({"items":[{"id":"136","name":"Strandbag","price":"24.99","productId":"SW10098","size":"","tax_percent":"19","imageURL":"http:\/\/couchcommerce.shopwaredemo.de\/\/media\/image\/thumbnail\/Einkaufstasche_720x600.jpg","imageAlt1":"","variants":"","qty":1,"taxAmount":3.99,"tax":"24.99","subtotal":"24.99","details":""}],"totals":{"subtotal":"24.99","shipping":"2.90","vat":"4.45","grandtotal":"27.89"},"billing":{"salutation": "Mr", "firstname":"John","lastname":"Pink","company":"Company X", "telephone": "0511-45673623", "email":"pink@themission.com","street1":"The mission 1","city":"San Francisco","zip":"5677732","state":"","0":"","country":"US","countryname":"United States"},"shipping":{ "salutation": "Mr", "firstname":"John","lastname":"Pink","company":"Company X", "telephone": "0511-45673623", "email":"pink@themission.com","street1":"The mission 1","city":"San Francisco","zip":"5677732","state":"","0":"","country":"US","countryname":"United States","id":"cc_standard"},"paymentMethod":"Rechnung","shippingMethod":"Standard"})';
+            var response = '({"items":[{"id":"136","name":"Strandbag","price":"24.99","productId":"SW10098","size":"","tax_percent":"19","imageURL":"http:\/\/couchcommerce.shopwaredemo.de\/\/media\/image\/thumbnail\/Einkaufstasche_720x600.jpg","imageAlt1":"","variants":"","qty":1,"taxAmount":3.99,"tax":"24.99","subtotal":"24.99","details":""}],"totals":{"subtotal":"24.99","shipping":"2.90","vat":"4.45","grandtotal":"27.89"},"billing":{"salutation": "Mr", "firstname":"John","lastname":"Pink","company":"Company X", "telephone": "0511-45673623", "email":"pink@themission.com","street":"The mission","streetnumber":"1","streetextra":"block C","city":"San Francisco","zip":"5677732","state":"","0":"","country":"US","countryname":"United States"},"shipping":{ "salutation": "Mr", "firstname":"John","lastname":"Pink","company":"Company X", "telephone": "0511-45673623", "email":"pink@themission.com","street":"The mission","streetnumber":"1","streetextra":"block C","city":"San Francisco","zip":"5677732","state":"","0":"","country":"US","countryname":"United States","id":"cc_standard"},"paymentMethod":"Rechnung","shippingMethod":"Standard"})';
 
             httpService.when('POST', sofa.Config.checkoutUrl + 'summaryst.php')
                 .respond(response);
