@@ -37,6 +37,7 @@
         "by"
     ],
     "globals": {
+        "sofa": true,
         "cc": true,
         "angular": false,
         "window": true

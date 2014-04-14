@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.2.0 - 2014-03-31
+ * sofa-checkout-service - v0.3.0 - 2014-04-14
  * http://www.sofa.io
  *
  * Copyright (c) 2013 CouchCommerce GmbH (http://www.couchcommerce.org) and other contributors
@@ -70,9 +70,9 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
                 model.birthday &&
                 model.birthmonth &&
                 model.birthyear) {
-                model.birthdate = sofa.Util.zeroFill(model.birthyear, 4) + '-' +
-                    sofa.Util.zeroFill(model.birthmonth.value, 2) + '-' +
-                    sofa.Util.zeroFill(model.birthday, 2);
+                model.birthdate = sofa.utils.FormatUtils.zeroFill(model.birthyear, 4) + '-' +
+                    sofa.utils.FormatUtils.zeroFill(model.birthmonth.value, 2) + '-' +
+                    sofa.utils.FormatUtils.zeroFill(model.birthday, 2);
                 delete model.birthday;
                 delete model.birthmonth;
                 delete model.birthyear;
@@ -499,6 +499,39 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     return self;
+});
+
+'use strict';
+/* global sofa */
+/**
+ * @name FormatUtils
+ * @namespace sofa.utils
+ *
+ * @description
+ * The `sofa.utils.FormatUtils` provides methods to convert various kinds of data into
+ * other formats used throughout the API and backend.
+ */
+sofa.define('sofa.utils.FormatUtils', {
+    /**
+     * @method zeroFill
+     * @memberof sofa.utils.FormatUtils
+     *
+     * @description
+     * Turns any number into a string with a specified amount of leading zeros.
+     *
+     * @example
+     * zeroFill(64, 4)
+     * => "0064"
+     *
+     * @return {string} Number with leading zeros
+     */
+    zeroFill: function (number, width) {
+        width -= number.toString().length;
+        if (width > 0) {
+            return new Array(width + (/\./.test(number) ? 2 : 1)).join('0') + number;
+        }
+        return number + '';
+    }
 });
 
 } (sofa));
