@@ -1,3 +1,13 @@
+<a name="0.3.1"></a>
+### 0.3.1 (2014-04-16)
+
+
+#### Bug Fixes
+
+* **Gruntfile:** fixes license banner ([d1128ae2](https://github.com/sofa/sofa-checkout-service/commit/d1128ae22b916e88f9d0942c444421d1d8cb42f6))
+* **LICENSE:** fixes naming ([90132df8](https://github.com/sofa/sofa-checkout-service/commit/90132df8c406abce16695257c5815777b42dae74))
+
+
 <a name="0.3.0"></a>
 ## 0.3.0 (2014-04-14)
 
