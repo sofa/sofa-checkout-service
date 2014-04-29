@@ -96,8 +96,10 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
 
         requestModel.quote = JSON.stringify(self.createQuoteData());
 
-        requestModel.pseudocardpan = modelCopy.pseudocardpan;
-        requestModel.truncatedcardpan = modelCopy.truncatedcardpan;
+        if (modelCopy.payone) {
+            requestModel.payonePseudocardpan = modelCopy.payone.pseudocardpan;
+            requestModel.payoneTruncatedcardpan = modelCopy.payone.truncatedcardpan;
+        }
 
         var coupons = basketService.getActiveCoupons().map(function (coupon) {
             return coupon.code;
@@ -454,20 +456,42 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
             throw 'stop execution';
         }
 
+
+        var useNewApi = lastSummaryResponse.response.paymentMethodName === 'PAYONE_CREDIT_CARD';
+        var checkoutUrl = useNewApi ?
+                            configService.get('checkoutUrlNew') + 'orders' :
+                            CHECKOUT_URL + 'docheckoutst.php';
+
         return $http({
             method: 'POST',
-            url: CHECKOUT_URL + 'docheckoutst.php',
+            url: checkoutUrl,
             headers: FORM_DATA_HEADERS,
             transformRequest: cc.Util.toFormData,
             data: {
                 details: 'get',
-                token: token
+                token: token,
+                'storeCode': configService.get('storeCode')
             }
         })
         .then(function (response) {
-            var json = sofa.Util.toJson(response.data);
+            if (useNewApi) {
+                if (response.data.error) {
+                    return $q.reject(response.data.error);
+                }
 
-            return json;
+                // Some payment methods have redirectUrls here as well.
+                // Check and redirect if one is present.
+                if (response.data.redirectUrl) {
+                    window.location.href = response.data.redirectUrl;
+                    throw 'stop execution';
+                }
+
+                return response.data;
+            }
+            else {
+                var json = sofa.Util.toJson(response.data);
+                return json;
+            }
         }, function (fail) {
             loggingService.error([
                 '[CheckoutService: checkoutWithCouchCommerce]',

@@ -1,3 +1,12 @@
+<a name="0.4.0"></a>
+## 0.4.0 (2014-04-29)
+
+
+#### Features
+
+* **docheckoutst:** switch to new API, check for redirects at pre- and post-checkout, pass payone on ([2fbc1066](https://github.com/sofa/sofa-checkout-service/commit/2fbc1066aa254bf07e3cc98f173c2ac93f7f6cfd))
+
+
 <a name="0.3.1"></a>
 ### 0.3.1 (2014-04-16)
 
