@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.4.0 - 2014-04-29
+ * sofa-checkout-service - v0.4.0 - 2014-05-02
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -463,7 +463,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         // as the backend needs to finalize the order
         if (redirect && redirect.token === token) {
             window.location.href = configService.get('checkoutUrl') + redirect.redirect + '?token=' + token;
-            throw 'stop execution';
+            return;
         }
 
 
@@ -493,7 +493,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
                 // Check and redirect if one is present.
                 if (response.data.redirectUrl) {
                     window.location.href = response.data.redirectUrl;
-                    throw 'stop execution';
+                    return;
                 }
 
                 return response.data;

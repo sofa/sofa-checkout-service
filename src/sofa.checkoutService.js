@@ -453,7 +453,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         // as the backend needs to finalize the order
         if (redirect && redirect.token === token) {
             window.location.href = configService.get('checkoutUrl') + redirect.redirect + '?token=' + token;
-            throw 'stop execution';
+            return;
         }
 
 
@@ -483,7 +483,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
                 // Check and redirect if one is present.
                 if (response.data.redirectUrl) {
                     window.location.href = response.data.redirectUrl;
-                    throw 'stop execution';
+                    return;
                 }
 
                 return response.data;
