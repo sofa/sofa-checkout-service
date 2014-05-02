@@ -1,3 +1,12 @@
+<a name="0.4.1"></a>
+### 0.4.1 (2014-05-02)
+
+
+#### Bug Fixes
+
+* **redirect:** don't throw, just return to prevent unwanted error messages on redirect ([cea0e924](https://github.com/sofa/sofa-checkout-service/commit/cea0e924492835e36be9b077e4e980a97b33f289))
+
+
 <a name="0.4.0"></a>
 ## 0.4.0 (2014-04-29)
 
