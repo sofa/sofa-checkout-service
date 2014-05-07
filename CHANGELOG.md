@@ -1,3 +1,12 @@
+<a name="0.4.2"></a>
+### 0.4.2 (2014-05-07)
+
+
+#### Bug Fixes
+
+* **payone:** don't pass undefined card numbers ([f0a4c93f](https://github.com/sofa/sofa-checkout-service/commit/f0a4c93f2e6ef00847087e846fd72258dc62569a))
+
+
 <a name="0.4.1"></a>
 ### 0.4.1 (2014-05-02)
 
