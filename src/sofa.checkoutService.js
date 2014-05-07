@@ -97,8 +97,10 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         requestModel.quote = JSON.stringify(self.createQuoteData());
 
         if (modelCopy.payone) {
-            requestModel.payonePseudocardpan = modelCopy.payone.pseudocardpan;
-            requestModel.payoneTruncatedcardpan = modelCopy.payone.truncatedcardpan;
+            if (modelCopy.payone.pseudocardpan && modelCopy.payone.truncatedcardpan) {
+                requestModel.payonePseudocardpan = modelCopy.payone.pseudocardpan;
+                requestModel.payoneTruncatedcardpan = modelCopy.payone.truncatedcardpan;
+            }
         }
 
         var coupons = basketService.getActiveCoupons().map(function (coupon) {
