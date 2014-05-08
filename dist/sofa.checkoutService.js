@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.4.2 - 2014-05-07
+ * sofa-checkout-service - v0.4.2 - 2014-05-08
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -107,9 +107,48 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         requestModel.quote = JSON.stringify(self.createQuoteData());
 
         if (modelCopy.payone) {
-            if (modelCopy.payone.pseudocardpan && modelCopy.payone.truncatedcardpan) {
-                requestModel.payonePseudocardpan = modelCopy.payone.pseudocardpan;
-                requestModel.payoneTruncatedcardpan = modelCopy.payone.truncatedcardpan;
+            // Values that need to be checked and copied if they exist on the modelCopy
+            var payoneValues = {
+                'pseudocardpan': {
+                    name: 'payonePseudocardpan'
+                },
+                'truncatedcardpan': {
+                    name: 'payoneTruncatedcardpan'
+                },
+                'iban': {
+                    name: 'payoneIban'
+                },
+                'bic': {
+                    name: 'payoneBic'
+                },
+                'financingtype': {
+                    name: 'payoneFinancingtype',
+                    dropdown: true
+                },
+                'shippingprovider': {
+                    name: 'payoneShippingprovider',
+                    dropdown: true
+                },
+                'wallettype': {
+                    name: 'payoneWallettype',
+                    dropdown: true
+                },
+                'onlinebanktransfertype': {
+                    name: 'payoneOnlinebanktransfertype',
+                    dropdown: true
+                }
+            };
+
+            for (var v in payoneValues) {
+                if (modelCopy.payone[v]) {
+                    if (payoneValues[v].dropdown) {
+                        requestModel[payoneValues[v].name] = modelCopy.payone[v].value;
+                    }
+                    else {
+                        requestModel[payoneValues[v].name] = modelCopy.payone[v];
+                    }
+
+                }
             }
         }
 
@@ -468,8 +507,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
             return;
         }
 
-
-        var useNewApi = lastSummaryResponse.response.paymentMethodName === 'PAYONE_CREDIT_CARD';
+        var useNewApi = lastSummaryResponse.response.paymentMethodName.substr(0, 7) === 'PAYONE_';
         var checkoutUrl = useNewApi ?
                             configService.get('checkoutUrlNew') + 'orders' :
                             CHECKOUT_URL + 'docheckoutst.php';
