@@ -493,7 +493,9 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         // as the backend needs to finalize the order
         if (redirect && redirect.token === token) {
             window.location.href = configService.get('checkoutUrl') + redirect.redirect + '?token=' + token;
-            return;
+            return {
+                redirect: true
+            };
         }
 
         var useNewApi = lastSummaryResponse.response.paymentMethodName.substr(0, 7) === 'PAYONE_';
@@ -522,7 +524,9 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
                 // Check and redirect if one is present.
                 if (response.data.redirectUrl) {
                     window.location.href = response.data.redirectUrl;
-                    return;
+                    return {
+                        redirect: true
+                    };
                 }
 
                 return response.data;
