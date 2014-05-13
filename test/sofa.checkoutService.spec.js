@@ -98,7 +98,6 @@ describe('sofa.checkoutService', function () {
             checkoutService.getSupportedCheckoutMethods(checkoutModel)
                 .then(function (data) {
                     expect(data).toBe(null);
-                    expect(checkoutModel).toEqual(checkoutModel);
                     done();
                 });
 
@@ -151,6 +150,44 @@ describe('sofa.checkoutService', function () {
                     expect(response.invoiceAddress).toEqual(mrPinkAppRepresentation);
                     done();
                 });
+        });
+
+        async.it('checkoutWithCouchCommerce uses same shippingAddress as billingAddress when allowSeparateShippingAddress is false', function (done) {
+
+            httpService.when('POST', sofa.Config.checkoutUrl + 'ajax.php').respond({});
+            basketService.clear();
+
+            var product = new sofa.models.Product();
+            product.name = 'Testproduct';
+            product.id = 10;
+
+            basketService.addItem(product, 1);
+
+            var checkoutModel = {
+                billingAddress: sofa.Util.clone(mrPinkAppRepresentation),
+                shippingAddress: sofa.Util.clone(mrPinkAppRepresentation),
+                supportedShippingMethods: [],
+                supportedPaymentMethods: [],
+                selectedPaymentMethod: null,
+                selectedShippingMethod: null,
+                addressEqual: false
+            };
+
+            checkoutModel.shippingAddress.surname = 'Blue';
+
+            checkoutService.allowSeparateShippingAddress = false;
+
+            checkoutService.getSupportedCheckoutMethods(checkoutModel)
+                .then(function (data) {
+                    expect(data).toBe(null);
+                    done();
+                });
+
+            var httpConfig = httpService.getLastCallParams();
+            var data = httpConfig.data;
+
+            //it's easier to compare the JavaScript objects here instead of the raw JSON strings.
+            expect(JSON.parse(data.shippingAddress)).toEqual(mrPinkBackendRepresentation);
         });
     });
 });

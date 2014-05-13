@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.4.2 - 2014-05-12
+ * sofa-checkout-service - v0.4.2 - 2014-05-13
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -32,6 +32,15 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         lastSummaryResponse;
 
     var redirect = null;
+
+    /**
+     * @member allowSeparateShippingAddress
+     * @memberof sofa.CheckoutService
+     *
+     * Whether the checkoutService allows users to have a separate shipping address, or if the
+     * shipping address should always be the same as the billing address
+     */
+    self.allowSeparateShippingAddress = true;
 
     //allow this service to raise events
     sofa.observable.mixin(self);
@@ -147,7 +156,6 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
                     else {
                         requestModel[payoneValues[v].name] = modelCopy.payone[v];
                     }
-
                 }
             }
         }
@@ -307,10 +315,6 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     self.checkoutWithCouchCommerce = function (checkoutModel) {
 
         assureCorrectShippingAddress(checkoutModel);
-
-        if (checkoutModel.addressEqual) {
-            checkoutModel.shippingAddress = checkoutModel.billingAddress;
-        }
 
         var requestModel = createRequestData(checkoutModel);
         requestModel.task = 'CHECKOUT';
@@ -560,7 +564,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     var assureCorrectShippingAddress = function (checkoutModel) {
-        if (checkoutModel.addressEqual) {
+        if (checkoutModel.addressEqual || !self.allowSeparateShippingAddress) {
             checkoutModel.shippingAddress = checkoutModel.billingAddress;
         }
         return checkoutModel;
