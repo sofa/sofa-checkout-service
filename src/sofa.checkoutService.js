@@ -52,6 +52,11 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         }
 
         var modelCopy = sofa.Util.clone(checkoutModel);
+
+        if (modelCopy.addressEqual) {
+            modelCopy.shippingAddress = modelCopy.billingAddress;
+        }
+
         var requestModel = {};
 
         var convertBirthDay = function (model) {
@@ -186,8 +191,6 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
      */
     self.getSupportedCheckoutMethods = function (checkoutModel) {
 
-        assureCorrectShippingAddress(checkoutModel);
-
         var requestModel = createRequestData(checkoutModel);
         requestModel.task = 'GETPAYMENTMETHODS';
 
@@ -256,8 +259,6 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
      * @return {object} A promise.
      */
     self.checkoutWithCouchCommerce = function (checkoutModel) {
-
-        assureCorrectShippingAddress(checkoutModel);
 
         if (checkoutModel.addressEqual) {
             checkoutModel.shippingAddress = checkoutModel.billingAddress;
@@ -505,13 +506,6 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
 
             return $q.reject(fail);
         });
-    };
-
-    var assureCorrectShippingAddress = function (checkoutModel) {
-        if (checkoutModel.addressEqual) {
-            checkoutModel.shippingAddress = checkoutModel.billingAddress;
-        }
-        return checkoutModel;
     };
 
     return self;

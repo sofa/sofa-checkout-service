@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.4.2 - 2014-05-07
+ * sofa-checkout-service - v0.4.2 - 2014-05-19
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -62,6 +62,11 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         }
 
         var modelCopy = sofa.Util.clone(checkoutModel);
+
+        if (modelCopy.addressEqual) {
+            modelCopy.shippingAddress = modelCopy.billingAddress;
+        }
+
         var requestModel = {};
 
         var convertBirthDay = function (model) {
@@ -196,8 +201,6 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
      */
     self.getSupportedCheckoutMethods = function (checkoutModel) {
 
-        assureCorrectShippingAddress(checkoutModel);
-
         var requestModel = createRequestData(checkoutModel);
         requestModel.task = 'GETPAYMENTMETHODS';
 
@@ -266,8 +269,6 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
      * @return {object} A promise.
      */
     self.checkoutWithCouchCommerce = function (checkoutModel) {
-
-        assureCorrectShippingAddress(checkoutModel);
 
         if (checkoutModel.addressEqual) {
             checkoutModel.shippingAddress = checkoutModel.billingAddress;
@@ -515,13 +516,6 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
 
             return $q.reject(fail);
         });
-    };
-
-    var assureCorrectShippingAddress = function (checkoutModel) {
-        if (checkoutModel.addressEqual) {
-            checkoutModel.shippingAddress = checkoutModel.billingAddress;
-        }
-        return checkoutModel;
     };
 
     return self;
