@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.4.2 - 2014-05-19
+ * sofa-checkout-service - v0.4.3 - 2014-06-05
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -64,7 +64,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         var modelCopy = sofa.Util.clone(checkoutModel);
 
         if (modelCopy.addressEqual) {
-            modelCopy.shippingAddress = modelCopy.billingAddress;
+            modelCopy.shippingAddress = sofa.Util.clone(modelCopy.billingAddress);
         }
 
         var requestModel = {};
@@ -88,14 +88,14 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         convertBirthDay(modelCopy.shippingAddress);
 
         if (modelCopy.billingAddress && modelCopy.billingAddress.country) {
-            modelCopy.billingAddress.country = checkoutModel.billingAddress.country.value;
-            modelCopy.billingAddress.countryLabel = checkoutModel.billingAddress.country.label;
+            modelCopy.billingAddress.countryLabel = modelCopy.billingAddress.country.label;
+            modelCopy.billingAddress.country = modelCopy.billingAddress.country.value;
             requestModel.invoiceAddress = JSON.stringify(modelCopy.billingAddress);
         }
 
         if (modelCopy.shippingAddress && modelCopy.shippingAddress.country) {
-            modelCopy.shippingAddress.country = checkoutModel.shippingAddress.country.value;
-            modelCopy.shippingAddress.countryLabel = checkoutModel.shippingAddress.country.label;
+            modelCopy.shippingAddress.countryLabel = modelCopy.shippingAddress.country.label;
+            modelCopy.shippingAddress.country = modelCopy.shippingAddress.country.value;
             requestModel.shippingAddress = JSON.stringify(modelCopy.shippingAddress);
         }
 
