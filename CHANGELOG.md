@@ -1,3 +1,12 @@
+<a name="0.4.4"></a>
+### 0.4.4 (2014-06-05)
+
+
+#### Bug Fixes
+
+* **sofa-checkout-service:** model copy ([0e3d3981](https://github.com/sofa/sofa-checkout-service/commit/0e3d3981cf467fc081da94fe328406b49f989ac9))
+
+
 <a name="0.4.3"></a>
 ### 0.4.3 (2014-05-19)
 
