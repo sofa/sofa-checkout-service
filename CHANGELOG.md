@@ -1,3 +1,12 @@
+<a name="0.5.2"></a>
+### 0.5.2 (2014-06-20)
+
+
+#### Bug Fixes
+
+* **sofa.CheckoutService:** fixes bug in birthday data transform function ([1d0976c6](https://github.com/sofa/sofa-checkout-service/commit/1d0976c63629b39467666b0682c19151d5925f96))
+
+
 <a name="0.5.0"></a>
 ## 0.5.0 (2014-06-20)
 
