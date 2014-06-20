@@ -1,3 +1,12 @@
+<a name="0.5.0"></a>
+## 0.5.0 (2014-06-20)
+
+
+#### Bug Fixes
+
+* **deploy:** make compatible with latest version ([5a0e73e3](https://github.com/sofa/sofa-checkout-service/commit/5a0e73e30a7cdb89318d900709efb6ce8e1a64d3))
+
+
 <a name="0.4.4"></a>
 ### 0.4.4 (2014-06-20)
 
