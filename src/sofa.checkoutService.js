@@ -66,7 +66,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
                 model.birthmonth &&
                 model.birthyear) {
                 model.birthdate = sofa.utils.FormatUtils.zeroFill(model.birthyear, 4) + '-' +
-                    sofa.utils.FormatUtils.zeroFill(model.birthmonth.value, 2) + '-' +
+                    sofa.utils.FormatUtils.zeroFill(model.birthmonth, 2) + '-' +
                     sofa.utils.FormatUtils.zeroFill(model.birthday, 2);
                 delete model.birthday;
                 delete model.birthmonth;
