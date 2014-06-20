@@ -197,18 +197,23 @@ module.exports = function (grunt) {
                     'package.json',
                     'bower.json'
                 ],
-                preDeployFn: function (grunt) {
+                preDeployFn: function (grunt, newVersion, done) {
                     grunt.task.run([
                         'build',
                         'changelog'
                     ]);
+                    done();
                 },
-                postDeployFn: function (grunt) {
+                postDeployFn: function (grunt, newVersion, done) {
                     if (!grunt.option('soft')) {
                         var exec = require('child_process').exec;
                         exec('npm publish', null, function (err, stdout) {
                             console.log(stdout);
+                            done();
                         });
+                    }
+                    else {
+                        done();
                     }
                 }
             }
