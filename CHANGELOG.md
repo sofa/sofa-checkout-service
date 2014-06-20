@@ -1,4 +1,13 @@
 <a name="0.4.4"></a>
+### 0.4.4 (2014-06-20)
+
+
+#### Features
+
+* **grunt:** better deploying ([78fb1068](https://github.com/sofa/sofa-checkout-service/commit/78fb106888e787d57ceb41f306c20f6d6d749079))
+
+
+<a name="0.4.4"></a>
 ### 0.4.4 (2014-06-05)
 
 

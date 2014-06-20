@@ -1,33 +1,33 @@
 {
-  "name": "sofa-checkout-service",
-  "version": "0.4.4",
-  "homepage": "http://www.sofa.io",
-  "authors": [
-    "Pascal Precht <pascal@couchcommerce.com>"
-  ],
-  "description": "Sofa Web SDK checkout service component.",
-  "main": "dist/sofa.checkoutService.js",
-  "dependencies": {
-    "sofa-core": "0.6.x",
-    "sofa-http-service": "0.2.x",
-    "sofa-logging-service": "0.1.x",
-    "sofa-basket-service": "0.1.x",
-    "sofa-q-service": "0.1.x",
-    "sofa-storages": "0.2.x"
-  },
-  "devDependencies": {
-    "sofa-testing": "0.2.x",
-    "jasmine.async": "~0.1.0"
-  },
-  "resolutions": {
-      "sofa-core": "0.6.x"
-  },
-  "keywords": [
-    "sofa",
-    "sofa.io",
-    "web",
-    "sdk",
-    "service"
-  ],
-  "license": "GPL"
+    "name": "sofa-checkout-service",
+    "version": "0.5.0",
+    "homepage": "http://www.sofa.io",
+    "authors": [
+        "Pascal Precht <pascal@couchcommerce.com>"
+    ],
+    "description": "Sofa Web SDK checkout service component.",
+    "main": "dist/sofa.checkoutService.js",
+    "dependencies": {
+        "sofa-core": "0.6.x",
+        "sofa-http-service": "0.2.x",
+        "sofa-logging-service": "0.1.x",
+        "sofa-basket-service": "0.1.x",
+        "sofa-q-service": "0.1.x",
+        "sofa-storages": "0.2.x"
+    },
+    "devDependencies": {
+        "sofa-testing": "0.2.x",
+        "jasmine.async": "~0.1.0"
+    },
+    "resolutions": {
+        "sofa-core": "0.6.x"
+    },
+    "keywords": [
+        "sofa",
+        "sofa.io",
+        "web",
+        "sdk",
+        "service"
+    ],
+    "license": "GPL"
 }
