@@ -1,3 +1,12 @@
+<a name="0.5.3"></a>
+### 0.5.3 (2014-06-23)
+
+
+#### Bug Fixes
+
+* **grunt:** update deploy task format ([e6309ab3](https://github.com/sofa/sofa-checkout-service/commit/e6309ab32d8a59d1b504c8effa6a69d614dd38c1))
+
+
 <a name="0.5.2"></a>
 ### 0.5.2 (2014-06-20)
 
