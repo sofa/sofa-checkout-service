@@ -198,6 +198,9 @@ module.exports = function (grunt) {
                     'bower.json'
                 ],
                 preDeployFn: function (grunt, newVersion, done) {
+                    // Needed to make uglify use the banner with the new version inside
+                    grunt.config.set('pkg', grunt.file.readJSON('package.json'));
+
                     grunt.task.run([
                         'build',
                         'changelog'
