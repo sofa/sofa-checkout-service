@@ -1,6 +1,6 @@
 {
     "name": "sofa-checkout-service",
-    "version": "0.5.3",
+    "version": "0.6.0",
     "homepage": "http://www.sofa.io",
     "authors": [
         "Pascal Precht <pascal@couchcommerce.com>"
