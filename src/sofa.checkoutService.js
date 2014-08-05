@@ -1,8 +1,21 @@
 'use strict';
 /* global sofa */
 /**
- * @name CheckoutService
- * @namespace sofa.CheckoutService
+ * @sofadoc class
+ * @name sofa.CheckoutService
+ * @package sofa-checkout-service
+ *
+ * @requiresPackage sofa-http-service
+ * @requiresPackage sofa-q-service
+ * @requiresPackage sofa-basket-service
+ * @requiresPackage sofa-logging-service
+ *
+ * @requires sofa.HttpService
+ * @requires sofa.QService
+ * @requires sofa.BasketService
+ * @requires sofa.LoggingService
+ *
+ * @distFile dist/sofa.checkoutService.js
  *
  * @description
  * The `sofa.CheckoutService` provides methods to perform checkouts as well as giving
@@ -117,7 +130,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     /**
-     * @method getLastUsedPaymentMethod
+     * @sofadoc method
+     * @name sofa.CheckoutService#getLastUsedPaymentMethod
      * @memberof sofa.CheckoutService
      *
      * @description
@@ -133,7 +147,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     /**
-     * @method getLastUsedShippingMethod
+     * @sofadoc method
+     * @name sofa.CheckoutService#getLastUsedShippingMethod
      * @memberof sofa.CheckoutService
      *
      * @description
@@ -149,7 +164,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     /**
-     * @method getShippingMethodsForPayPal
+     * @sofadoc method
+     * @name sofa.CheckoutService#getShippingMethodsForPayPal
      * @memberof sofa.CheckoutService
      *
      * @description
@@ -179,7 +195,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     /**
-     * @method getSupportedCheckoutMethods
+     * @sofadoc method
+     * @name sofa.CheckoutService#getSupportedCheckoutMethods
      * @memberof sofa.CheckoutService
      *
      * @description
@@ -253,7 +270,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     /**
-     * @method checkoutWithCouchCommerce
+     * @sofadoc method
+     * @name sofa.CheckoutService#checkoutWithCouchCommerce
      * @memberof sofa.CheckoutService
      *
      * @return {object} A promise.
@@ -295,11 +313,12 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     /**
-     * @method checkoutWithPayPal
+     * @sofadoc method
+     * @name sofa.CheckoutService#checkoutWithPayPal
      * @memberof sofa.CheckoutService
      *
      * @param {object} shippingMethod Shipping method object.
-     * @param {object) shippingCountry Country to ship.
+     * @param {object} shippingCountry Country to ship.
      */
     self.checkoutWithPayPal = function (shippingMethod, shippingCountry) {
 
@@ -396,7 +415,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     /**
-     * @method getSummary
+     * @sofadoc method
+     * @name sofa.CheckoutService#getSummary
      * @memberof sofa.CheckoutService
      *
      * @return {object} A promise.
@@ -434,7 +454,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     /**
-     * @method getLastSummary
+     * @sofadoc method
+     * @name sofa.CheckoutService#getLastSummary
      * @memberof sofa.CheckoutService
      *
      * @return {object} Last summary response.
@@ -444,7 +465,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     /**
-     * @method activateOrder
+     * @sofadoc method
+     * @name sofa.CheckoutService#activateOrder
      * @memberof sofa.CheckoutService
      *
      * @return {object} A promise.

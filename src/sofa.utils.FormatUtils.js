@@ -1,8 +1,13 @@
 'use strict';
 /* global sofa */
 /**
- * @name FormatUtils
- * @namespace sofa.utils
+ * @sofadoc class
+ * @name sofa.Util.FormatUtils
+ * @namespace sofa.Util
+ * @package sofa-checkout-service
+ * @distFile dist/sofa.checkoutService.js
+ * @static
+ *
  *
  * @description
  * The `sofa.utils.FormatUtils` provides methods to convert various kinds of data into
@@ -10,8 +15,9 @@
  */
 sofa.define('sofa.utils.FormatUtils', {
     /**
-     * @method zeroFill
-     * @memberof sofa.utils.FormatUtils
+     * @sofadoc method
+     * @name sofa.Util.FormatUtils#zeroFill
+     * @memberof sofa.Utils.FormatUtils
      *
      * @description
      * Turns any number into a string with a specified amount of leading zeros.
