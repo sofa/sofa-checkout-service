@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.6.0 - 2014-08-05
+ * sofa-checkout-service - v0.6.0 - 2014-09-12
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -36,108 +36,102 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
 
     var self = {};
 
-    var FORM_DATA_HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'},
-        CHECKOUT_URL      = configService.get('checkoutUrl'),
-        FULL_CHECKOUT_URL = configService.get('checkoutUrl') + 'ajax.php';
-
     var lastUsedPaymentMethod,
-        lastUsedShippingMethod,
-        lastSummaryResponse;
+        lastUsedShippingMethod;
 
-    var redirect = null;
+    // we pass the shared state to all the requester and converter in order to let them
+    // share common state.
+    var sharedState = {};
+
+    var checkoutMethodsRequestConverter = new sofa.checkoutservice.CheckoutMethodsRequestConverter(sharedState),
+        checkoutMethodsRequester        = new sofa.checkoutservice.CheckoutMethodsRequester($q, $http, configService, sharedState),
+        checkoutRequestConverter        = new sofa.checkoutservice.CheckoutRequestConverter(sharedState),
+        checkoutRequester               = new sofa.checkoutservice.CheckoutRequester($q, $http, configService, sharedState),
+        quoteToOrderRequester           = new sofa.checkoutservice.QuoteToOrderRequester($q, $http, configService, sharedState),
+        quoteRequester                  = new sofa.checkoutservice.QuoteRequester($q, $http, configService, sharedState),
+        orderRequester                  = new sofa.checkoutservice.OrderRequester($q, $http, configService, sharedState);
 
     //allow this service to raise events
     sofa.observable.mixin(self);
 
+    //FIXME: This is needed for the CouponService to work
     self.createQuoteData = function () {
-
-        var data = basketService
-                    .getItems()
-                    .map(function (item) {
-                        return {
-                            // we always want the productId to be a string and this method
-                            // has a safer handling of undefined and null values
-                            productID: item.product.id + '',
-                            qty: item.quantity,
-                            variantID: item.getVariantID(),
-                            optionID: item.getOptionID()
-                        };
-                    });
-
-        return data;
+        throw new Error('not implemented');
     };
+
+    // LEAVE THIS HERE UNTIL WE FINISHED PORTING ALL THE BIRTHDAY & COUPON STUFF
 
     //we need to transform the checkoutModel into something the backend understands
-    var createRequestData = function (checkoutModel) {
+    // var createRequestData = function (checkoutModel) {
 
-        if (!checkoutModel) {
-            return null;
-        }
+    //     if (!checkoutModel) {
+    //         return null;
+    //     }
 
-        var modelCopy = sofa.Util.clone(checkoutModel);
+    //     var modelCopy = sofa.Util.clone(checkoutModel);
 
-        if (modelCopy.addressEqual) {
-            modelCopy.shippingAddress = sofa.Util.clone(modelCopy.billingAddress);
-        }
+    //     if (modelCopy.addressEqual) {
+    //         modelCopy.shippingAddress = sofa.Util.clone(modelCopy.billingAddress);
+    //     }
 
-        var requestModel = {};
+    //     var requestModel = {};
 
-        var convertBirthDay = function (model) {
-            // Convert the birthday into the yyyy-mm-dd format
-            if (model &&
-                model.birthday &&
-                model.birthmonth &&
-                model.birthyear) {
-                model.birthdate = sofa.utils.FormatUtils.zeroFill(model.birthyear, 4) + '-' +
-                    sofa.utils.FormatUtils.zeroFill(model.birthmonth, 2) + '-' +
-                    sofa.utils.FormatUtils.zeroFill(model.birthday, 2);
-                delete model.birthday;
-                delete model.birthmonth;
-                delete model.birthyear;
-            }
-        };
+    //     var convertBirthDay = function (model) {
+    //         // Convert the birthday into the yyyy-mm-dd format
+    //         if (model &&
+    //             model.birthday &&
+    //             model.birthmonth &&
+    //             model.birthyear) {
+    //             model.birthdate = sofa.utils.FormatUtils.zeroFill(model.birthyear, 4) + '-' +
+    //                 sofa.utils.FormatUtils.zeroFill(model.birthmonth, 2) + '-' +
+    //                 sofa.utils.FormatUtils.zeroFill(model.birthday, 2);
+    //             delete model.birthday;
+    //             delete model.birthmonth;
+    //             delete model.birthyear;
+    //         }
+    //     };
 
-        convertBirthDay(modelCopy.billingAddress);
-        convertBirthDay(modelCopy.shippingAddress);
+    //     convertBirthDay(modelCopy.billingAddress);
+    //     convertBirthDay(modelCopy.shippingAddress);
 
-        if (modelCopy.billingAddress && modelCopy.billingAddress.country) {
-            modelCopy.billingAddress.countryLabel = modelCopy.billingAddress.country.label;
-            modelCopy.billingAddress.country = modelCopy.billingAddress.country.value;
-            requestModel.invoiceAddress = JSON.stringify(modelCopy.billingAddress);
-        }
+    //     if (modelCopy.billingAddress && modelCopy.billingAddress.country) {
+    //         modelCopy.billingAddress.countryLabel = modelCopy.billingAddress.country.label;
+    //         modelCopy.billingAddress.country = modelCopy.billingAddress.country.value;
+    //         requestModel.invoiceAddress = JSON.stringify(modelCopy.billingAddress);
+    //     }
 
-        if (modelCopy.shippingAddress && modelCopy.shippingAddress.country) {
-            modelCopy.shippingAddress.countryLabel = modelCopy.shippingAddress.country.label;
-            modelCopy.shippingAddress.country = modelCopy.shippingAddress.country.value;
-            requestModel.shippingAddress = JSON.stringify(modelCopy.shippingAddress);
-        }
+    //     if (modelCopy.shippingAddress && modelCopy.shippingAddress.country) {
+    //         modelCopy.shippingAddress.countryLabel = modelCopy.shippingAddress.country.label;
+    //         modelCopy.shippingAddress.country = modelCopy.shippingAddress.country.value;
+    //         requestModel.shippingAddress = JSON.stringify(modelCopy.shippingAddress);
+    //     }
 
-        if (modelCopy.selectedPaymentMethod && modelCopy.selectedPaymentMethod.method) {
-            requestModel.paymentMethod = modelCopy.selectedPaymentMethod.method;
-        } else {
-            requestModel.paymentMethod = modelCopy.selectedPaymentMethod;
-        }
+    //     if (modelCopy.selectedPaymentMethod && modelCopy.selectedPaymentMethod.method) {
+    //         requestModel.paymentMethod = modelCopy.selectedPaymentMethod.method;
+    //     } else {
+    //         requestModel.paymentMethod = modelCopy.selectedPaymentMethod;
+    //     }
 
-        if (modelCopy.selectedShippingMethod && modelCopy.selectedShippingMethod.method) {
-            requestModel.shippingMethod = modelCopy.selectedShippingMethod.method;
-        }
+    //     if (modelCopy.selectedShippingMethod && modelCopy.selectedShippingMethod.method) {
+    //         requestModel.shippingMethod = modelCopy.selectedShippingMethod.method;
+    //     }
 
-        requestModel.quote = JSON.stringify(self.createQuoteData());
+    //     requestModel.quote = JSON.stringify(self.createQuoteData());
 
-        if (modelCopy.payone) {
-            if (modelCopy.payone.pseudocardpan && modelCopy.payone.truncatedcardpan) {
-                requestModel.payonePseudocardpan = modelCopy.payone.pseudocardpan;
-                requestModel.payoneTruncatedcardpan = modelCopy.payone.truncatedcardpan;
-            }
-        }
+    //     if (modelCopy.payone) {
+    //         if (modelCopy.payone.pseudocardpan && modelCopy.payone.truncatedcardpan) {
+    //             requestModel.payonePseudocardpan = modelCopy.payone.pseudocardpan;
+    //             requestModel.payoneTruncatedcardpan = modelCopy.payone.truncatedcardpan;
+    //         }
+    //     }
 
-        var coupons = basketService.getActiveCoupons().map(function (coupon) {
-            return coupon.code;
-        });
-        requestModel.coupons = JSON.stringify(coupons);
+    //     var coupons = basketService.getActiveCoupons().map(function (coupon) {
+    //         return coupon.code;
+    //     });
+    //     requestModel.coupons = JSON.stringify(coupons);
 
-        return requestModel;
-    };
+    //     return requestModel;
+    // };
 
     /**
      * @sofadoc method
@@ -191,17 +185,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
      * @return {object} A promise.
      */
     self.getShippingMethodsForPayPal = function (shippingCountry) {
-        var checkoutModel = {
-            billingAddress: {
-                country: shippingCountry || configService.getDefaultCountry()
-            },
-            shippingAddress: {
-                country: shippingCountry || configService.getDefaultCountry()
-            },
-            selectedPaymentMethod: 'paypal_express'
-        };
-
-        return self.getSupportedCheckoutMethods(checkoutModel);
+        throw new Error('not implemented');
     };
 
     /**
@@ -217,9 +201,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
      * @return {object} A promise.
      */
     self.getSupportedCheckoutMethods = function (checkoutModel) {
-
-        var requestModel = createRequestData(checkoutModel);
-        requestModel.task = 'GETPAYMENTMETHODS';
+        var requestModel = checkoutMethodsRequestConverter(
+                                validateCheckoutModel(checkoutModel), basketService.getItems());
 
         if (sofa.Util.isObject(checkoutModel.selectedPaymentMethod)) {
             lastUsedPaymentMethod = checkoutModel.selectedPaymentMethod;
@@ -229,320 +212,364 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
             lastUsedShippingMethod = checkoutModel.selectedShippingMethod;
         }
 
-        return $http({
-            method: 'POST',
-            url: FULL_CHECKOUT_URL,
-            headers: FORM_DATA_HEADERS,
-            transformRequest: cc.Util.toFormData,
-            data: requestModel
-        })
-        .then(function (response) {
-            var data = null;
-
-            if (response.data) {
-                data = sofa.Util.toJson(response.data);
-
-                if (data) {
-
-                    //We need to fix some types. It's a bug in the backend
-                    //https://github.com/couchcommerce/admin/issues/42
-
-                    data.paymentMethods = data.paymentMethods
-                                            .map(function (method) {
-                                                method.surcharge = parseFloat(method.surcharge);
-                                                /* jshint ignore: start */
-                                                if (method.surcharge_percentage) {
-                                                    method.surcharge_percentage = parseFloat(method.surcharge_percentage);
-                                                }
-                                                /* jshint ignore: end */
-                                                return method;
-                                            });
-
-                    data.shippingMethods = data.shippingMethods
-                                            .map(function (method) {
-                                                method.price = parseFloat(method.price);
-                                                return method;
-                                            });
-                }
-            }
-
-            return data;
-        }, function (fail) {
-            loggingService.error([
-                '[CheckoutService: getSupportedCheckoutMethods]',
-                '[Request Data]',
-                checkoutModel,
-                '[Service answer]',
-                fail
-            ]);
-            return $q.reject(fail);
-        });
+        return checkoutMethodsRequester(requestModel)
+                .then(null, function (fail) {
+                    loggingService.error([
+                        '[CheckoutService: getSupportedCheckoutMethods]',
+                        '[Request Data]',
+                        requestModel,
+                        '[Service answer]',
+                        fail
+                    ]);
+                    return $q.reject(fail);
+                });
     };
 
-    /**
-     * @sofadoc method
-     * @name sofa.CheckoutService#checkoutWithCouchCommerce
-     * @memberof sofa.CheckoutService
-     *
-     * @return {object} A promise.
-     */
-    self.checkoutWithCouchCommerce = function (checkoutModel) {
+    self.checkout = function (checkoutModel) {
+        var requestModel = checkoutRequestConverter(
+                            validateCheckoutModel(checkoutModel), basketService.getItems());
 
-        if (checkoutModel.addressEqual) {
-            checkoutModel.shippingAddress = checkoutModel.billingAddress;
+        return checkoutRequester(requestModel)
+                .then(null, function (fail) {
+                    loggingService.error([
+                        '[CheckoutService: getSupportedCheckoutMethods]',
+                        '[Request Data]',
+                        requestModel,
+                        '[Service answer]',
+                        fail
+                    ]);
+                    return $q.reject(fail);
+                });
+    };
+
+    var validateCheckoutModel = function (checkoutModel) {
+        // we don't want to mess with the original instance
+        // as it might be directly bound to UI stuff. We make a copy
+        // and perform all manipulations there.
+        var modelCopy = sofa.Util.clone(checkoutModel);
+
+        if (modelCopy.addressEqual) {
+            modelCopy.shippingAddress = modelCopy.billingAddress;
         }
 
-        var requestModel = createRequestData(checkoutModel);
-        requestModel.task = 'CHECKOUT';
-
-        return $http({
-            method: 'POST',
-            url: FULL_CHECKOUT_URL,
-            headers: FORM_DATA_HEADERS,
-            transformRequest: cc.Util.toFormData,
-            data: requestModel
-        })
-        .then(function (response) {
-            var data = null;
-            if (response.data) {
-                data = sofa.Util.toJson(response.data);
-                data = data.token || null;
-            }
-            return data;
-        }, function (fail) {
-            loggingService.error([
-                '[CheckoutService: checkoutWithCouchCommerce]',
-                '[Request Data]',
-                checkoutModel,
-                '[Service answer]',
-                fail
-            ]);
-
-            return $q.reject(fail);
-        });
+        return modelCopy;
     };
 
     /**
      * @sofadoc method
-     * @name sofa.CheckoutService#checkoutWithPayPal
-     * @memberof sofa.CheckoutService
-     *
-     * @param {object} shippingMethod Shipping method object.
-     * @param {object} shippingCountry Country to ship.
-     */
-    self.checkoutWithPayPal = function (shippingMethod, shippingCountry) {
-
-        var checkoutModel = {
-            selectedShippingMethod: shippingMethod,
-            selectedPaymentMethod: { method: 'paypal' },
-            shippingAddress: {
-                country: shippingCountry
-            },
-            billingAddress: {
-                country: shippingCountry
-            }
-        };
-
-        var requestModel = createRequestData(checkoutModel);
-        requestModel.task = 'UPDATEQUOTEPP';
-
-        return $http({
-            method: 'POST',
-            url: FULL_CHECKOUT_URL,
-            headers: FORM_DATA_HEADERS,
-            transformRequest: cc.Util.toFormData,
-            data: requestModel
-        })
-        .then(function (response) {
-            /*jslint eqeq: true*/
-            if (response.data == 1) {
-                //we set the browser to this backend url and the backend in turn
-                //redirects the browser to PayPal. Not sure why we don't redirect the
-                //browser directly.
-                //TODO: ask Felix
-                window.location.href = configService.get('checkoutUrl');
-            } else {
-                return $q.reject(new Error('invalid server response'));
-            }
-        })
-        .then(null, function (fail) {
-            loggingService.error([
-                '[CheckoutService: checkoutWithPayPal]',
-                '[Request Data]',
-                requestModel,
-                '[Service answer]',
-                fail
-            ]);
-            return $q.reject(fail);
-        });
-    };
-
-    var safeUse = function (property) {
-        return property === undefined || property === null ? '' : property;
-    };
-
-    //unfortunately the backend uses all sorts of different address formats
-    //this one converts an address coming from a summary response to the
-    //generic app address format.
-    var convertAddress = function (backendAddress) {
-
-        backendAddress = backendAddress || {};
-
-        var country = {
-            value: safeUse(backendAddress.country),
-            label: safeUse(backendAddress.countryname)
-        };
-
-        return {
-            company:            safeUse(backendAddress.company),
-            salutation:         safeUse(backendAddress.salutation),
-            surname:            safeUse(backendAddress.lastname),
-            name:               safeUse(backendAddress.firstname),
-            street:             safeUse(backendAddress.street),
-            streetnumber:       safeUse(backendAddress.streetnumber),
-            streetextra:        safeUse(backendAddress.streetextra),
-            zip:                safeUse(backendAddress.zip),
-            city:               safeUse(backendAddress.city),
-            country:            !country.value ? null : country,
-            email:              safeUse(backendAddress.email),
-            telephone:          safeUse(backendAddress.telephone)
-        };
-    };
-
-    //we want to make sure that the server returned summary can be used
-    //out of the box to work with our summary templates/directives, hence
-    //we have to convert it (similar to how we do it for the addresses).
-    var convertSummary = function (backendSummary) {
-        backendSummary = backendSummary || {};
-
-        return {
-            sum:            safeUse(backendSummary.subtotal),
-            shipping:       safeUse(backendSummary.shipping),
-            surcharge:      safeUse(backendSummary.surcharge),
-            vat:            safeUse(backendSummary.vat),
-            total:          safeUse(backendSummary.grandtotal)
-        };
-    };
-
-    /**
-     * @sofadoc method
-     * @name sofa.CheckoutService#getSummary
+     * @name sofa.CheckoutService#getQuote
      * @memberof sofa.CheckoutService
      *
      * @return {object} A promise.
      */
-    self.getSummary = function (token) {
-        return $http({
-            method: 'POST',
-            url: CHECKOUT_URL + 'summaryst.php',
-            headers: FORM_DATA_HEADERS,
-            transformRequest: cc.Util.toFormData,
-            data: {
-                details: 'get',
-                token: token
-            }
-        })
-        .then(function (response) {
-            var data = {};
-            data.response = sofa.Util.toJson(response.data);
-            data.invoiceAddress = convertAddress(data.response.billing);
-            data.shippingAddress = convertAddress(data.response.shipping);
-            data.summary = convertSummary(data.response.totals);
-            data.token = token;
-
-            lastSummaryResponse = data;
-
-            // For providers such as CouchPay
-            if (data.response.redirect) {
-                redirect = { token: token, redirect: data.response.redirect };
-            } else {
-                redirect = null;
-            }
-
-            return data;
-        });
+    self.getQuote = function (quoteInfo) {
+        return quoteRequester(quoteInfo);
     };
 
     /**
      * @sofadoc method
-     * @name sofa.CheckoutService#getLastSummary
-     * @memberof sofa.CheckoutService
-     *
-     * @return {object} Last summary response.
-     */
-    self.getLastSummary = function () {
-        return lastSummaryResponse;
-    };
-
-    /**
-     * @sofadoc method
-     * @name sofa.CheckoutService#activateOrder
+     * @name sofa.CheckoutService#getOrder
      * @memberof sofa.CheckoutService
      *
      * @return {object} A promise.
      */
-    //that's the final step to actually create the order on the backend
-    self.activateOrder = function (token) {
+    self.getOrder = function (orderInfo) {
+        return orderRequester(orderInfo);
+    };
 
-        // docheckoutst.php cannot be called here if a payment method redirects us
-        // as the backend needs to finalize the order
-        if (redirect && redirect.token === token) {
-            window.location.href = configService.get('checkoutUrl') + redirect.redirect + '?token=' + token;
-            return;
-        }
-
-
-        var useNewApi = lastSummaryResponse.response.paymentMethodName === 'PAYONE_CREDIT_CARD';
-        var checkoutUrl = useNewApi ?
-                            configService.get('checkoutUrlNew') + 'orders' :
-                            CHECKOUT_URL + 'docheckoutst.php';
-
-        return $http({
-            method: 'POST',
-            url: checkoutUrl,
-            headers: FORM_DATA_HEADERS,
-            transformRequest: cc.Util.toFormData,
-            data: {
-                details: 'get',
-                token: token,
-                'storeCode': configService.get('storeCode')
-            }
-        })
-        .then(function (response) {
-            if (useNewApi) {
-                if (response.data.error) {
-                    return $q.reject(response.data.error);
-                }
-
-                // Some payment methods have redirectUrls here as well.
-                // Check and redirect if one is present.
-                if (response.data.redirectUrl) {
-                    window.location.href = response.data.redirectUrl;
-                    return;
-                }
-
-                return response.data;
-            }
-            else {
-                var json = sofa.Util.toJson(response.data);
-                return json;
-            }
-        }, function (fail) {
-            loggingService.error([
-                '[CheckoutService: checkoutWithCouchCommerce]',
-                '[Request Data]',
-                token,
-                '[Service answer]',
-                fail
-            ]);
-
-            return $q.reject(fail);
-        });
+    /**
+     * @sofadoc method
+     * @name sofa.CheckoutService#placeOrder
+     * @memberof sofa.CheckoutService
+     *
+     * @return {object} A promise.
+     */
+    self.placeOrder = function (orderInfo) {
+        return quoteToOrderRequester(orderInfo)
+                .then(null, function (fail) {
+                    loggingService.error([
+                        '[CheckoutService: placeOrder]',
+                        '[Request Data]',
+                        orderInfo,
+                        '[Service answer]',
+                        fail
+                    ]);
+                    return $q.reject(fail);
+                });
     };
 
     return self;
 });
 
+'use strict';
+/* global sofa */
+/**
+ * @sofadoc class
+ * @name sofa.checkoutservice.CheckoutMethodsRequestConverter
+ * @namespace sofa.checkoutservice
+ * @package sofa-checkout-service
+ * @distFile dist/sofa.checkoutService.js
+ *
+ *
+ * @description
+ * The `sofa.checkoutservice.CheckoutMethodsRequestConverter` takes a copy of a `CheckoutModel` 
+ * plus an arryay of `BasketItems` and produces a request object for the `getSupportedCheckoutMethods`
+ * backend API call. The passed `CheckoutModel` instance is a copy so that mutation is safe to do without
+ * mutating foreign state.
+ */
+sofa.define('sofa.checkoutservice.CheckoutMethodsRequestConverter', function () {
+
+    var setIfDefinedAndNotNull = function (store, key, item) {
+        if (sofa.Util.isNotNullNorUndefined(item)) {
+            store[key] = item;
+        }
+    };
+
+    return function (checkoutModel, basketItems) {
+
+        var items = basketItems.map(function (item) {
+            return {
+                productId: item.product.id,
+                quantity: item.quantity,
+                variant: item.getVariantID() && { id: item.getVariantID() },
+                option: item.getOptionID() && { id: item.getOptionID() }
+            };
+        });
+
+        var requestModel = {};
+
+        // the API does not like things to be NULL. They should be left off instead
+        if (checkoutModel.billingAddress) {
+            requestModel.billingAddress = sofa.utils.FormatUtils.toBackendAddress(checkoutModel.billingAddress);
+            requestModel.shippingAddress = sofa.utils.FormatUtils.toBackendAddress(checkoutModel.shippingAddress);
+        }
+
+        setIfDefinedAndNotNull(requestModel, 'currency', checkoutModel.currency);
+        setIfDefinedAndNotNull(requestModel, 'payment', checkoutModel.selectedPaymentMethod);
+        setIfDefinedAndNotNull(requestModel, 'shipping', checkoutModel.selectedShippingMethod);
+        setIfDefinedAndNotNull(requestModel, 'items', items);
+        setIfDefinedAndNotNull(requestModel, 'discounts', checkoutModel.discounts || []);
+
+        return requestModel;
+    };
+});
+'use strict';
+/* global sofa */
+/**
+ * @sofadoc class
+ * @name sofa.checkoutservice.CheckoutMethodsRequestConverter
+ * @namespace sofa.checkoutservice
+ * @package sofa-checkout-service
+ * @distFile dist/sofa.checkoutService.js
+ *
+ *
+ * @description
+ * The `sofa.checkoutservice.CheckoutMethodsRequester` takes the `RequestModel` for the checkout method retrieval
+ * and performs the actual API call against the backend API.
+ */
+sofa.define('sofa.checkoutservice.CheckoutMethodsRequester', function ($q, $http, configService) {
+
+    var CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint');
+
+    return function (requestModel) {
+        return $http({
+            method: 'POST',
+            url: CHECKOUT_ENDPOINT + '/quotes',
+            data: requestModel
+        })
+        .then(function (data) {
+            data.data.paymentMethods = data.data.allowedPaymentMethods;
+            data.data.shippingMethods = data.data.allowedShippingMethods;
+            return data.data;
+        });
+    };
+});
+'use strict';
+/* global sofa */
+/**
+ * @sofadoc class
+ * @name sofa.checkoutservice.CheckoutRequestConverter
+ * @namespace sofa.checkoutservice
+ * @package sofa-checkout-service
+ * @distFile dist/sofa.checkoutService.js
+ *
+ *
+ * @description
+ * The `sofa.checkoutservice.CheckoutRequestConverter` takes a copy of a `CheckoutModel` 
+ * plus an arryay of `BasketItems` and produces a request object for the `checkout`
+ * backend API call. The passed `CheckoutModel` instance is a copy so that mutation is safe to do without
+ * mutating foreign state.
+ */
+sofa.define('sofa.checkoutservice.CheckoutRequestConverter', function () {
+    // for now, we can just use the other converter. If they turn out to
+    // be the same thing we will just create a BaseCheckoutModelConverter and delegate
+    // to that.
+    return new sofa.checkoutservice.CheckoutMethodsRequestConverter();
+});
+'use strict';
+/* global sofa */
+/**
+ * @sofadoc class
+ * @name sofa.checkoutservice.CheckoutMethodsRequestConverter
+ * @namespace sofa.checkoutservice
+ * @package sofa-checkout-service
+ * @distFile dist/sofa.checkoutService.js
+ *
+ *
+ * @description
+ * The `sofa.checkoutservice.CheckoutRequester` takes the `RequestModel` for the checkout
+ * and performs the actual API call against the backend API.
+ */
+sofa.define('sofa.checkoutservice.CheckoutRequester', function ($q, $http, configService, sharedState) {
+
+    var CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint');
+
+    return function (requestModel) {
+        return $http({
+            method: 'POST',
+            url: CHECKOUT_ENDPOINT + '/quotes',
+            data: requestModel
+        })
+        .then(function (data) {
+            var wrapper = {
+                order: sofa.utils.FormatUtils.toSofaQuoteOrOrder(data.data),
+                token: data.headers('X-Auth-Token')
+            };
+            sharedState.lastOrder = wrapper;
+
+            return wrapper;
+        });
+    };
+});
+'use strict';
+/* global sofa */
+/**
+ * @sofadoc class
+ * @name sofa.checkoutservice.OrderRequester
+ * @namespace sofa.checkoutservice
+ * @package sofa-checkout-service
+ * @distFile dist/sofa.checkoutService.js
+ *
+ *
+ * @description
+ * The `sofa.checkoutservice.OrderRequester` takes an `OrderInfo` holding both the `orderId and
+ * returns the order via the backend API.
+ */
+sofa.define('sofa.checkoutservice.OrderRequester', function ($q, $http, configService) {
+
+    var CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint');
+
+    return function (orderInfo) {
+        return $http({
+            method: 'GET',
+            headers: { 'X-Auth-Token': orderInfo.token },
+            url: CHECKOUT_ENDPOINT + '/orders/' + orderInfo.orderId,
+            data: {}
+        })
+        .then(function (data) {
+            return data.data;
+        });
+    };
+});
+'use strict';
+/* global sofa */
+/**
+ * @sofadoc class
+ * @name sofa.checkoutservice.QuoteRequester
+ * @namespace sofa.checkoutservice
+ * @package sofa-checkout-service
+ * @distFile dist/sofa.checkoutService.js
+ *
+ *
+ * @description
+ * The `sofa.checkoutservice.QuoteRequester` takes an `QuoteInfo` holding both the `quoteId and
+ * the token and returns the order either from cache or via the backend API.
+ */
+sofa.define('sofa.checkoutservice.QuoteRequester', function ($q, $http, configService, sharedState) {
+
+    var CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint');
+
+    return function (quoteInfo) {
+        // we use == intentional here to allow both string and number parameters
+        /*jshint eqeqeq:false */
+        if (sharedState.lastOrder && sharedState.lastOrder.order.id == quoteInfo.quoteId &&
+            sharedState.lastOrder.token == quoteInfo.token) {
+            /*jshint eqeqeq:true */
+            return $q.when(sharedState.lastOrder.order);
+        }
+        else {
+            return $http({
+                method: 'GET',
+                headers: { 'X-Auth-Token': quoteInfo.token },
+                url: CHECKOUT_ENDPOINT + '/quotes/' + quoteInfo.quoteId,
+                data: {}
+            })
+            .then(function (data) {
+                return sofa.utils.FormatUtils.toSofaQuoteOrOrder(data.data);
+            });
+        }
+    };
+});
+'use strict';
+/* global sofa */
+/* global document */
+/**
+ * @sofadoc class
+ * @name sofa.checkoutservice.CheckoutMethodsRequestConverter
+ * @namespace sofa.checkoutservice
+ * @package sofa-checkout-service
+ * @distFile dist/sofa.checkoutService.js
+ *
+ *
+ * @description
+ * The `sofa.checkoutservice.CheckoutRequester` takes the `RequestModel` for the checkout
+ * and performs the actual API call against the backend API.
+ */
+sofa.define('sofa.checkoutservice.QuoteToOrderRequester', function ($q, $http, configService) {
+
+    var CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint');
+
+    var redirect = function (url, method, data) {
+        var form = document.createElement('form');
+        form.method = method;
+        form.action = url;
+
+        if (data) {
+            sofa.Util.forEach(data, function (value, key) {
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            });
+        }
+
+        form.submit();
+    };
+
+    return function (orderInfo) {
+
+        return $http({
+            method: 'POST',
+            headers: {'X-Auth-Token': orderInfo.token },
+            url: CHECKOUT_ENDPOINT + '/quotes/' + orderInfo.orderId + '/order',
+            data: {}
+        })
+        .then(function (data) {
+            var state = {
+                flow: 'local_thankyou',
+                data: data.data,
+            };
+
+            if (data.data.payment.redirectUrl) {
+                state.flow = 'redirect';
+                redirect(data.data.payment.redirectUrl, 'POST', data.data.payment.redirectParameters);
+            }
+
+            return state;
+        });
+    };
+});
 'use strict';
 /* global sofa */
 /**
@@ -579,6 +606,66 @@ sofa.define('sofa.utils.FormatUtils', {
             return new Array(width + (/\./.test(number) ? 2 : 1)).join('0') + number;
         }
         return number + '';
+    },
+    toBackendAddress: function (sofaAddress) {
+        // we currently work around non-null strictness by setting empty strings.
+        // Should be fixed soon.
+        return sofaAddress && {
+            company: sofaAddress.company || '',
+            salutation: sofaAddress.salutation || '',
+            firstName: sofaAddress.name || '',
+            lastName: sofaAddress.surname || '',
+            street: sofaAddress.street || '',
+            streetNumber: sofaAddress.streetnumber || '',
+            streetAdditional: sofaAddress.streetextra || '',
+            city: sofaAddress.city || '',
+            zipCode: sofaAddress.zip || '',
+            country: sofaAddress.country && sofaAddress.country.value,
+            phone: sofaAddress.telephone || '',
+            vatId: 0
+        };
+    },
+    toSofaAddress: function (backendAddress) {
+        return backendAddress && {
+            company: backendAddress.company,
+            salutation: backendAddress.salutation,
+            name: backendAddress.firstName,
+            surname: backendAddress.surname,
+            street: backendAddress.street,
+            streetnumber: backendAddress.streetNumber,
+            streetextra: backendAddress.streetAdditional,
+            city: backendAddress.city,
+            zip: backendAddress.zipCode,
+            country: {
+                value: backendAddress.country
+            },
+            telephone: backendAddress.phone
+        };
+    },
+    toSofaQuoteOrOrder: function (quoteOrOrder) {
+        quoteOrOrder.shippingAddress = sofa.utils.FormatUtils.toSofaAddress(quoteOrOrder.shippingAddress);
+        quoteOrOrder.billingAddress = sofa.utils.FormatUtils.toSofaAddress(quoteOrOrder.billingAddress);
+
+        var totals = quoteOrOrder.totals;
+        quoteOrOrder._totals = totals;
+
+        // FIXME: Temporally map the items
+        quoteOrOrder._items = quoteOrOrder.items;
+        quoteOrOrder.items = quoteOrOrder.items.map(function (item) {
+            item.price = item.price / 100;
+            item.subtotal = item.rowTotal / 100;
+            return item;
+        });
+
+        //FIXME: We just map to the old totals structure for now
+        quoteOrOrder.totals = {
+            total: totals.grandTotal / 100,
+            sum: totals.subTotal / 100,
+            shipping: totals.shippingAmount / 100,
+            // FIXME
+            vat: totals.taxTotals[0].taxAmount / 100
+        };
+        return quoteOrOrder;
     }
 });
 

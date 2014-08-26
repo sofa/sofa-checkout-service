@@ -34,5 +34,65 @@ sofa.define('sofa.utils.FormatUtils', {
             return new Array(width + (/\./.test(number) ? 2 : 1)).join('0') + number;
         }
         return number + '';
+    },
+    toBackendAddress: function (sofaAddress) {
+        // we currently work around non-null strictness by setting empty strings.
+        // Should be fixed soon.
+        return sofaAddress && {
+            company: sofaAddress.company || '',
+            salutation: sofaAddress.salutation || '',
+            firstName: sofaAddress.name || '',
+            lastName: sofaAddress.surname || '',
+            street: sofaAddress.street || '',
+            streetNumber: sofaAddress.streetnumber || '',
+            streetAdditional: sofaAddress.streetextra || '',
+            city: sofaAddress.city || '',
+            zipCode: sofaAddress.zip || '',
+            country: sofaAddress.country && sofaAddress.country.value,
+            phone: sofaAddress.telephone || '',
+            vatId: 0
+        };
+    },
+    toSofaAddress: function (backendAddress) {
+        return backendAddress && {
+            company: backendAddress.company,
+            salutation: backendAddress.salutation,
+            name: backendAddress.firstName,
+            surname: backendAddress.surname,
+            street: backendAddress.street,
+            streetnumber: backendAddress.streetNumber,
+            streetextra: backendAddress.streetAdditional,
+            city: backendAddress.city,
+            zip: backendAddress.zipCode,
+            country: {
+                value: backendAddress.country
+            },
+            telephone: backendAddress.phone
+        };
+    },
+    toSofaQuoteOrOrder: function (quoteOrOrder) {
+        quoteOrOrder.shippingAddress = sofa.utils.FormatUtils.toSofaAddress(quoteOrOrder.shippingAddress);
+        quoteOrOrder.billingAddress = sofa.utils.FormatUtils.toSofaAddress(quoteOrOrder.billingAddress);
+
+        var totals = quoteOrOrder.totals;
+        quoteOrOrder._totals = totals;
+
+        // FIXME: Temporally map the items
+        quoteOrOrder._items = quoteOrOrder.items;
+        quoteOrOrder.items = quoteOrOrder.items.map(function (item) {
+            item.price = item.price / 100;
+            item.subtotal = item.rowTotal / 100;
+            return item;
+        });
+
+        //FIXME: We just map to the old totals structure for now
+        quoteOrOrder.totals = {
+            total: totals.grandTotal / 100,
+            sum: totals.subTotal / 100,
+            shipping: totals.shippingAmount / 100,
+            // FIXME
+            vat: totals.taxTotals[0].taxAmount / 100
+        };
+        return quoteOrOrder;
     }
 });
