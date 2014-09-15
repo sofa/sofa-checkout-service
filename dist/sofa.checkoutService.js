@@ -378,6 +378,7 @@ sofa.define('sofa.checkoutservice.CheckoutMethodsRequester', function ($q, $http
             data: requestModel
         })
         .then(function (data) {
+            sofa.utils.FormatUtils.toSofaQuoteOrOrder(data.data);
             data.data.paymentMethods = data.data.allowedPaymentMethods;
             data.data.shippingMethods = data.data.allowedShippingMethods;
             return data.data;
@@ -645,6 +646,23 @@ sofa.define('sofa.utils.FormatUtils', {
     toSofaQuoteOrOrder: function (quoteOrOrder) {
         quoteOrOrder.shippingAddress = sofa.utils.FormatUtils.toSofaAddress(quoteOrOrder.shippingAddress);
         quoteOrOrder.billingAddress = sofa.utils.FormatUtils.toSofaAddress(quoteOrOrder.billingAddress);
+
+        if (quoteOrOrder.allowedPaymentMethods) {
+            quoteOrOrder._allowedPaymentMethods = quoteOrOrder.allowedPaymentMethods;
+            quoteOrOrder.allowedPaymentMethods = quoteOrOrder.allowedPaymentMethods.map(function (method) {
+                method.surcharge = method.surcharge / 100;
+                return method;
+            });
+        }
+
+        if (quoteOrOrder.allowedShippingMethods) {
+            quoteOrOrder._allowedShippingMethods = quoteOrOrder.allowedShippingMethods;
+            quoteOrOrder.allowedShippingMethods = quoteOrOrder.allowedShippingMethods.map(function (method) {
+                method.price = method.price / 100;
+                method.taxAmount = method.taxAmount / 100;
+                return method;
+            });
+        }
 
         var totals = quoteOrOrder.totals;
         quoteOrOrder._totals = totals;

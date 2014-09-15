@@ -23,6 +23,7 @@ sofa.define('sofa.checkoutservice.CheckoutMethodsRequester', function ($q, $http
             data: requestModel
         })
         .then(function (data) {
+            sofa.utils.FormatUtils.toSofaQuoteOrOrder(data.data);
             data.data.paymentMethods = data.data.allowedPaymentMethods;
             data.data.shippingMethods = data.data.allowedShippingMethods;
             return data.data;
