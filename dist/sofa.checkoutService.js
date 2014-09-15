@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.6.0 - 2014-09-12
+ * sofa-checkout-service - v0.6.0 - 2014-09-15
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -184,7 +184,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
      *
      * @return {object} A promise.
      */
-    self.getShippingMethodsForPayPal = function (shippingCountry) {
+    self.getShippingMethodsForPayPal = function (/* shippingCountry */) {
         throw new Error('not implemented');
     };
 

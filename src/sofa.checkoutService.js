@@ -174,7 +174,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
      *
      * @return {object} A promise.
      */
-    self.getShippingMethodsForPayPal = function (shippingCountry) {
+    self.getShippingMethodsForPayPal = function (/* shippingCountry */) {
         throw new Error('not implemented');
     };
 
