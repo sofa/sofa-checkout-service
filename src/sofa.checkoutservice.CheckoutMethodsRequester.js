@@ -19,13 +19,12 @@ sofa.define('sofa.checkoutservice.CheckoutMethodsRequester', function ($q, $http
     return function (requestModel) {
         return $http({
             method: 'POST',
-            url: CHECKOUT_ENDPOINT + '/quotes',
+            url: CHECKOUT_ENDPOINT + '/methods',
             data: requestModel
         })
         .then(function (data) {
-            sofa.utils.FormatUtils.toSofaQuoteOrOrder(data.data);
-            data.data.paymentMethods = data.data.allowedPaymentMethods;
-            data.data.shippingMethods = data.data.allowedShippingMethods;
+            data.data.paymentMethods = sofa.utils.FormatUtils.toSofaPaymentMethods(data.data.paymentMethods);
+            data.data.shippingMethods = sofa.utils.FormatUtils.toSofaShippingMethods(data.data.shippingMethods);
             return data.data;
         });
     };

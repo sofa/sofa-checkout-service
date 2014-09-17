@@ -70,25 +70,31 @@ sofa.define('sofa.utils.FormatUtils', {
             telephone: backendAddress.phone
         };
     },
+    toSofaPaymentMethods: function (paymentMethods) {
+        return paymentMethods.map(function (method) {
+            method.surcharge = method.surcharge / 100;
+            return method;
+        });
+    },
+    toSofaShippingMethods: function (shippingMethods) {
+        return shippingMethods.map(function (method) {
+            method.price = method.price / 100;
+            method.taxAmount = method.taxAmount / 100;
+            return method;
+        });
+    },
     toSofaQuoteOrOrder: function (quoteOrOrder) {
         quoteOrOrder.shippingAddress = sofa.utils.FormatUtils.toSofaAddress(quoteOrOrder.shippingAddress);
         quoteOrOrder.billingAddress = sofa.utils.FormatUtils.toSofaAddress(quoteOrOrder.billingAddress);
 
         if (quoteOrOrder.allowedPaymentMethods) {
             quoteOrOrder._allowedPaymentMethods = quoteOrOrder.allowedPaymentMethods;
-            quoteOrOrder.allowedPaymentMethods = quoteOrOrder.allowedPaymentMethods.map(function (method) {
-                method.surcharge = method.surcharge / 100;
-                return method;
-            });
+            quoteOrOrder.allowedPaymentMethods = sofa.utils.FormatUtils.toSofaPaymentMethods(quoteOrOrder.allowedPaymentMethods);
         }
 
         if (quoteOrOrder.allowedShippingMethods) {
             quoteOrOrder._allowedShippingMethods = quoteOrOrder.allowedShippingMethods;
-            quoteOrOrder.allowedShippingMethods = quoteOrOrder.allowedShippingMethods.map(function (method) {
-                method.price = method.price / 100;
-                method.taxAmount = method.taxAmount / 100;
-                return method;
-            });
+            quoteOrOrder.allowedShippingMethods = sofa.utils.FormatUtils.toSofaShippingMethods(quoteOrOrder.allowedShippingMethods);
         }
 
         var totals = quoteOrOrder.totals;

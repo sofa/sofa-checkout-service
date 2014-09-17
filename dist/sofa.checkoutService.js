@@ -374,13 +374,12 @@ sofa.define('sofa.checkoutservice.CheckoutMethodsRequester', function ($q, $http
     return function (requestModel) {
         return $http({
             method: 'POST',
-            url: CHECKOUT_ENDPOINT + '/quotes',
+            url: CHECKOUT_ENDPOINT + '/methods',
             data: requestModel
         })
         .then(function (data) {
-            sofa.utils.FormatUtils.toSofaQuoteOrOrder(data.data);
-            data.data.paymentMethods = data.data.allowedPaymentMethods;
-            data.data.shippingMethods = data.data.allowedShippingMethods;
+            data.data.paymentMethods = sofa.utils.FormatUtils.toSofaPaymentMethods(data.data.paymentMethods);
+            data.data.shippingMethods = sofa.utils.FormatUtils.toSofaShippingMethods(data.data.shippingMethods);
             return data.data;
         });
     };
@@ -643,25 +642,31 @@ sofa.define('sofa.utils.FormatUtils', {
             telephone: backendAddress.phone
         };
     },
+    toSofaPaymentMethods: function (paymentMethods) {
+        return paymentMethods.map(function (method) {
+            method.surcharge = method.surcharge / 100;
+            return method;
+        });
+    },
+    toSofaShippingMethods: function (shippingMethods) {
+        return shippingMethods.map(function (method) {
+            method.price = method.price / 100;
+            method.taxAmount = method.taxAmount / 100;
+            return method;
+        });
+    },
     toSofaQuoteOrOrder: function (quoteOrOrder) {
         quoteOrOrder.shippingAddress = sofa.utils.FormatUtils.toSofaAddress(quoteOrOrder.shippingAddress);
         quoteOrOrder.billingAddress = sofa.utils.FormatUtils.toSofaAddress(quoteOrOrder.billingAddress);
 
         if (quoteOrOrder.allowedPaymentMethods) {
             quoteOrOrder._allowedPaymentMethods = quoteOrOrder.allowedPaymentMethods;
-            quoteOrOrder.allowedPaymentMethods = quoteOrOrder.allowedPaymentMethods.map(function (method) {
-                method.surcharge = method.surcharge / 100;
-                return method;
-            });
+            quoteOrOrder.allowedPaymentMethods = sofa.utils.FormatUtils.toSofaPaymentMethods(quoteOrOrder.allowedPaymentMethods);
         }
 
         if (quoteOrOrder.allowedShippingMethods) {
             quoteOrOrder._allowedShippingMethods = quoteOrOrder.allowedShippingMethods;
-            quoteOrOrder.allowedShippingMethods = quoteOrOrder.allowedShippingMethods.map(function (method) {
-                method.price = method.price / 100;
-                method.taxAmount = method.taxAmount / 100;
-                return method;
-            });
+            quoteOrOrder.allowedShippingMethods = sofa.utils.FormatUtils.toSofaShippingMethods(quoteOrOrder.allowedShippingMethods);
         }
 
         var totals = quoteOrOrder.totals;
