@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.6.0 - 2014-09-15
+ * sofa-checkout-service - v0.6.0 - 2014-09-17
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -631,7 +631,7 @@ sofa.define('sofa.utils.FormatUtils', {
             company: backendAddress.company,
             salutation: backendAddress.salutation,
             name: backendAddress.firstName,
-            surname: backendAddress.surname,
+            surname: backendAddress.lastName,
             street: backendAddress.street,
             streetnumber: backendAddress.streetNumber,
             streetextra: backendAddress.streetAdditional,

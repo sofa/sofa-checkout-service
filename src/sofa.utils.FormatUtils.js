@@ -58,7 +58,7 @@ sofa.define('sofa.utils.FormatUtils', {
             company: backendAddress.company,
             salutation: backendAddress.salutation,
             name: backendAddress.firstName,
-            surname: backendAddress.surname,
+            surname: backendAddress.lastName,
             street: backendAddress.street,
             streetnumber: backendAddress.streetNumber,
             streetextra: backendAddress.streetAdditional,
