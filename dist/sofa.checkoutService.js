@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.6.0 - 2014-09-17
+ * sofa-checkout-service - v0.6.0 - 2014-09-18
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -372,6 +372,12 @@ sofa.define('sofa.checkoutservice.CheckoutMethodsRequester', function ($q, $http
     var CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint');
 
     return function (requestModel) {
+
+        // Last minute Reno hack. We need to set the productId to the variantId, because time.
+        requestModel.items.forEach(function (item) {
+            item.productId = item.variant ? item.variant.id : item.productId;
+        });
+
         return $http({
             method: 'POST',
             url: CHECKOUT_ENDPOINT + '/methods',

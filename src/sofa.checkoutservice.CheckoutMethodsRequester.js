@@ -17,6 +17,12 @@ sofa.define('sofa.checkoutservice.CheckoutMethodsRequester', function ($q, $http
     var CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint');
 
     return function (requestModel) {
+
+        // Last minute Reno hack. We need to set the productId to the variantId, because time.
+        requestModel.items.forEach(function (item) {
+            item.productId = item.variant ? item.variant.id : item.productId;
+        });
+
         return $http({
             method: 'POST',
             url: CHECKOUT_ENDPOINT + '/methods',
