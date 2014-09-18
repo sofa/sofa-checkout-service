@@ -105,6 +105,7 @@ sofa.define('sofa.utils.FormatUtils', {
         quoteOrOrder.items = quoteOrOrder.items.map(function (item) {
             item.price = item.price / 100;
             item.subtotal = item.rowTotal / 100;
+            item.qty = item.quantity;
             return item;
         });
 
