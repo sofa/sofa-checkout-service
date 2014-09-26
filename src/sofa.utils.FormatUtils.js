@@ -49,6 +49,7 @@ sofa.define('sofa.utils.FormatUtils', {
             city: sofaAddress.city || '',
             zipCode: sofaAddress.zip || '',
             country: sofaAddress.country && sofaAddress.country.value,
+            email: sofaAddress.email || '',
             phone: sofaAddress.telephone || '',
             vatId: 0
         };
@@ -67,6 +68,7 @@ sofa.define('sofa.utils.FormatUtils', {
             country: {
                 value: backendAddress.country
             },
+            email: backendAddress.email,
             telephone: backendAddress.phone
         };
     },

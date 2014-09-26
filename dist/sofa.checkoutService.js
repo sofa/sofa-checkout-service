@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.6.0 - 2014-09-18
+ * sofa-checkout-service - v0.6.0 - 2014-09-26
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -627,6 +627,7 @@ sofa.define('sofa.utils.FormatUtils', {
             city: sofaAddress.city || '',
             zipCode: sofaAddress.zip || '',
             country: sofaAddress.country && sofaAddress.country.value,
+            email: sofaAddress.email || '',
             phone: sofaAddress.telephone || '',
             vatId: 0
         };
@@ -645,6 +646,7 @@ sofa.define('sofa.utils.FormatUtils', {
             country: {
                 value: backendAddress.country
             },
+            email: backendAddress.email,
             telephone: backendAddress.phone
         };
     },
