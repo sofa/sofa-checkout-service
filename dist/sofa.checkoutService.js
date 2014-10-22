@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.6.0 - 2014-09-26
+ * sofa-checkout-service - v0.6.0 - 2014-10-22
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -345,7 +345,7 @@ sofa.define('sofa.checkoutservice.CheckoutMethodsRequestConverter', function () 
         }
 
         setIfDefinedAndNotNull(requestModel, 'currency', checkoutModel.currency);
-        setIfDefinedAndNotNull(requestModel, 'payment', checkoutModel.selectedPaymentMethod);
+        setIfDefinedAndNotNull(requestModel, 'payment', checkoutModel.payment);
         setIfDefinedAndNotNull(requestModel, 'shipping', checkoutModel.selectedShippingMethod);
         setIfDefinedAndNotNull(requestModel, 'items', items);
         setIfDefinedAndNotNull(requestModel, 'discounts', checkoutModel.discounts || []);
@@ -353,6 +353,7 @@ sofa.define('sofa.checkoutservice.CheckoutMethodsRequestConverter', function () 
         return requestModel;
     };
 });
+
 'use strict';
 /* global sofa */
 /**
