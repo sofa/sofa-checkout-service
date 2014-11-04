@@ -1,5 +1,5 @@
 'use strict';
-/* global sofa */
+/* global sofa, document */
 /**
  * @sofadoc class
  * @name sofa.CheckoutService
@@ -269,6 +269,43 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         });
     };
 
+    var lazyLoadBraintree = function () {
+        var deferred = $q.defer();
+        var bt = document.createElement('script');
+        bt.type = 'text/javascript';
+        bt.async = true;
+        bt.src = 'https://assets.braintreegateway.com/v2/braintree.js';
+        bt.onload = function () {
+            deferred.resolve();
+        };
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(bt, s);
+        return deferred.promise;
+    };
+
+    var getBraintreeNonce = function (token, ccData) {
+        var deferred = $q.defer();
+        var client = new window.braintree.api.Client({
+            clientToken: token
+        });
+        client.tokenizeCard({
+            /* jshint camelcase: false */
+            number: ccData.number,
+            expirationMonth: ccData.expirationMonth,
+            expirationYear: ccData.expirationYear,
+            cvv: ccData.cvv
+            /* jshint camelcase: true */
+        }, function (err, nonce) {
+            if (err) {
+                deferred.reject(err);
+            }
+            else {
+                deferred.resolve(nonce);
+            }
+        });
+        return deferred.promise;
+    };
+
     /**
      * @sofadoc method
      * @name sofa.CheckoutService#checkoutWithCouchCommerce
@@ -285,12 +322,51 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         var requestModel = createRequestData(checkoutModel);
         requestModel.task = 'CHECKOUT';
 
-        return $http({
-            method: 'POST',
-            url: FULL_CHECKOUT_URL,
-            headers: FORM_DATA_HEADERS,
-            transformRequest: cc.Util.toFormData,
-            data: requestModel
+        return $q.when().then(function () {
+            if (checkoutModel.selectedPaymentMethod.method === 'braintree_creditcard') {
+                return $http({
+                    method: 'POST',
+                    headers: FORM_DATA_HEADERS,
+                    url: FULL_CHECKOUT_URL,
+                    transformRequest: cc.Util.toFormData,
+                    data: {
+                        task: 'BRAINTREETOKEN'
+                    }
+                }).then(function (response) {
+                    var token = response.data.token;
+
+                    if (!window.braintree) {
+                        return lazyLoadBraintree()
+                        .then(function () {
+                            return $q.when(token);
+                        });
+                    }
+                    else {
+                        return $q.when(token);
+                    }
+                }).then(function (token) {
+                    return getBraintreeNonce(token, {
+                        number: checkoutModel.braintree.creditcardnumber.replace(/ /g, ''),
+                        cvv: checkoutModel.braintree.creditcardcvc2,
+                        expirationMonth: checkoutModel.braintree.creditcardexpirationmonth.value,
+                        expirationYear: 2000 + checkoutModel.braintree.creditcardexpirationyear.value,
+                    }).then(function (nonce) {
+                        requestModel.braintreeNonce = nonce;
+                    });
+                });
+            }
+            else {
+                return $q.when();
+            }
+        })
+        .then(function () {
+            return $http({
+                method: 'POST',
+                url: FULL_CHECKOUT_URL,
+                headers: FORM_DATA_HEADERS,
+                transformRequest: cc.Util.toFormData,
+                data: requestModel
+            });
         })
         .then(function (response) {
             var data = null;
