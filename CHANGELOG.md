@@ -1,3 +1,13 @@
+<a name="0.7.0"></a>
+## 0.7.0 (2014-11-05)
+
+
+#### Features
+
+* ***:** support for braintree ([a6ed71aa](https://github.com/sofa/sofa-checkout-service/commit/a6ed71aa89b0af118dd6d4720547de2892e4024b))
+* **karma:** add debug mode ([fb981d13](https://github.com/sofa/sofa-checkout-service/commit/fb981d137b83fb8287dd1fd175118db6f204d3be))
+
+
 <a name="0.6.0"></a>
 ## 0.6.0 (2014-08-05)
 
