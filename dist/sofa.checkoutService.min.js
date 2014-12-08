@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.7.0 - 2014-11-05
+ * sofa-checkout-service - v0.8.0 - 2014-12-08
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
