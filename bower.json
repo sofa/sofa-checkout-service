@@ -8,15 +8,15 @@
     "description": "Sofa Web SDK checkout service component.",
     "main": "dist/sofa.checkoutService.js",
     "dependencies": {
-        "sofa-core": "0.6.x",
-        "sofa-http-service": "0.2.x",
-        "sofa-logging-service": "0.1.x",
-        "sofa-basket-service": "0.1.x",
-        "sofa-q-service": "0.1.x",
-        "sofa-storages": "0.2.x"
+        "sofa-core": "0.13.x",
+        "sofa-http-service": "0.5.x",
+        "sofa-logging-service": "0.3.x",
+        "sofa-basket-service": "0.4.x",
+        "sofa-q-service": "0.3.x",
+        "sofa-storages": "0.4.x"
     },
     "devDependencies": {
-        "sofa-testing": "0.2.x",
+        "sofa-testing": "0.7.x",
         "jasmine.async": "~0.1.0"
     },
     "resolutions": {
