@@ -17,7 +17,7 @@ describe('sofa.checkout.FlowRouter', function () {
     describe('Flow Router', function () {
 
         it('should match flow against checkoutModel', function () {
-            var flow = new sofa.checkout.flows.Braintree();
+            var flow = new sofa.checkout.flows.DummyFlow();
 
             flowRouter.addFlow({
                 flow: flow,

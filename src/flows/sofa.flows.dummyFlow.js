@@ -1,7 +1,7 @@
 'use strict';
 /* global sofa, document */
 
-sofa.define('sofa.checkout.flows.Braintree', function ($q) {
+sofa.define('sofa.checkout.flows.DummyFlow', function ($q) {
 
     var self = {};
 

@@ -18,7 +18,7 @@ describe('sofa.checkoutService', function () {
         loggingService = new sofa.LoggingService(configService);
         checkoutService = new sofa.CheckoutService(httpService, q, basketService, loggingService, configService);
 
-        var flow = new sofa.checkout.flows.Braintree(q);
+        var flow = new sofa.checkout.flows.DummyFlow(q);
         checkoutService
             .addFlow({
                 flow: flow,
