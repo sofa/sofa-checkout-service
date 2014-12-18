@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.7.0 - 2014-12-17
+ * sofa-checkout-service - v0.7.0 - 2014-12-18
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -240,7 +240,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         };
     };
 
-    self.getAvailableShippingMethods = function (checkoutModel) {
+    self.getAvailableCheckoutMethods = function (checkoutModel) {
         return $http({
             method: 'POST',
             url: CHECKOUT_ENDPOINT + '/methods',

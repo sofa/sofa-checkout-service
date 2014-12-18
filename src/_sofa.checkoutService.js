@@ -230,7 +230,7 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         };
     };
 
-    self.getAvailableShippingMethods = function (checkoutModel) {
+    self.getAvailableCheckoutMethods = function (checkoutModel) {
         return $http({
             method: 'POST',
             url: CHECKOUT_ENDPOINT + '/methods',
