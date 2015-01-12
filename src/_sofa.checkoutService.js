@@ -27,6 +27,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     var self = {},
         quoteCache = null,
         CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint'),
+        STORE_PAYMENT_METHOD_KEY = 'paymentMethod',
+        STORE_SHIPPING_METHOD_KEY = 'shippingMethod',
         quoteRequester = new sofa.checkout.DefaultQuoteRequester($q),
         //orderRequester = new sofa.checkout.OrderRequester(),
         router = new sofa.checkout.FlowRouter();
@@ -225,16 +227,27 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         return {
             billingAddress: {},
             shippingAddress: {},
-            payment: {},
-            shipping: {}
+            // payment: null,
+            // shipping: null,
+            items: []
         };
     };
 
     self.getAvailableCheckoutMethods = function (checkoutModel) {
+
+        checkoutModel.items = basketService.getItems().map(function (item) {
+            return {
+                productId: item.product.id,
+                quantity: item.quantity,
+                variant: item.getVariantID() && { id: item.getVariantID() },
+                option: item.getOptionID() && { id: item.getOptionID() }
+            };
+        });
+
         return $http({
             method: 'POST',
             url: CHECKOUT_ENDPOINT + '/methods',
-            data: requestModel
+            data: checkoutModel
         })
         .then(function (data) {
             data.data.paymentMethods = sofa.utils.FormatUtils.toSofaPaymentMethods(data.data.paymentMethods);
@@ -252,15 +265,70 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     self.createQuote = function (checkoutModel) {
-        var flow = router.matchFlow(checkoutModel);
+
+        // we don't want to mess with the original instance
+        // as it might be directly bound to UI stuff. We make a copy
+        // and perform all manipulations there.
+        var checkoutModelCopy = augmentCheckoutModel(sofa.Util.clone(checkoutModel));
+
+        var flow = router.matchFlow(checkoutModelCopy);
         return flow
-                .checkout(checkoutModel)
+                .createQuote(checkoutModelCopy)
                 .then(function (quote) {
                     quoteCache = quote;
                     quoteCache.cached = true;
                     return quote;
                 });
     };
+
+    self.updateQuote = function (checkoutModel) {
+
+        var checkoutModelCopy = augmentCheckoutModel(sofa.Util.clone(checkoutModel));
+
+        var flow = router.matchFlow(checkoutModelCopy);
+        return flow
+                .updateQuote(checkoutModelCopy)
+                .then(function (quote) {
+                    quoteCache = quote;
+                    quoteCache.cached = true;
+                    return quote;
+                });
+    };
+
+    var augmentCheckoutModel = function (checkoutModelCopy) {
+
+        // we alter the models here before we set them to the same instance because afterwards
+        // it's not safe anymore to alter them
+        if (checkoutModelCopy.billingAddress && checkoutModelCopy.billingAddress.country) {
+            checkoutModelCopy.billingAddress.country = checkoutModelCopy.billingAddress.country.value;
+        }
+
+        if (checkoutModelCopy.shippingAddress && checkoutModelCopy.shippingAddress.country) {
+            checkoutModelCopy.shippingAddress.country = checkoutModelCopy.shippingAddress.country.value;
+        }
+
+
+        // shipping is billing
+        if (checkoutModelCopy.addressEqual && sofa.Util.isEmpty(checkoutModelCopy.shippingAddress)) {
+            checkoutModelCopy.shippingAddress = checkoutModelCopy.billingAddress;
+        // billing is shipping
+        } else if (checkoutModelCopy.addressEqual && sofa.Util.isEmpty(checkoutModelCopy.billingAddress)) {
+            checkoutModelCopy.billingAddress = checkoutModelCopy.shippingAddress;
+        }
+
+        checkoutModelCopy.items = basketService.getItems().map(function (item) {
+            return {
+                //FIXME: get rid of hack as soon as we have the new API
+                productId: item.product.id + '',
+                quantity: item.quantity,
+                // FIXME: use as soon as Jan fixes all the things 
+                //variant: item.getVariantID() && { id: item.getVariantID() },
+                //option: item.getOptionID() && { id: item.getOptionID() }
+            };
+        });
+
+        return checkoutModelCopy;
+    }
 
     // is this likely to have different flows?
     self.getQuote = function (quoteInfo) {

@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.7.0 - 2014-12-18
+ * sofa-checkout-service - v0.7.0 - 2015-01-12
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -37,6 +37,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     var self = {},
         quoteCache = null,
         CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint'),
+        STORE_PAYMENT_METHOD_KEY = 'paymentMethod',
+        STORE_SHIPPING_METHOD_KEY = 'shippingMethod',
         quoteRequester = new sofa.checkout.DefaultQuoteRequester($q),
         //orderRequester = new sofa.checkout.OrderRequester(),
         router = new sofa.checkout.FlowRouter();
@@ -235,16 +237,27 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         return {
             billingAddress: {},
             shippingAddress: {},
-            payment: {},
-            shipping: {}
+            // payment: null,
+            // shipping: null,
+            items: []
         };
     };
 
     self.getAvailableCheckoutMethods = function (checkoutModel) {
+
+        checkoutModel.items = basketService.getItems().map(function (item) {
+            return {
+                productId: item.product.id,
+                quantity: item.quantity,
+                variant: item.getVariantID() && { id: item.getVariantID() },
+                option: item.getOptionID() && { id: item.getOptionID() }
+            };
+        });
+
         return $http({
             method: 'POST',
             url: CHECKOUT_ENDPOINT + '/methods',
-            data: requestModel
+            data: checkoutModel
         })
         .then(function (data) {
             data.data.paymentMethods = sofa.utils.FormatUtils.toSofaPaymentMethods(data.data.paymentMethods);
@@ -262,15 +275,70 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     };
 
     self.createQuote = function (checkoutModel) {
-        var flow = router.matchFlow(checkoutModel);
+
+        // we don't want to mess with the original instance
+        // as it might be directly bound to UI stuff. We make a copy
+        // and perform all manipulations there.
+        var checkoutModelCopy = augmentCheckoutModel(sofa.Util.clone(checkoutModel));
+
+        var flow = router.matchFlow(checkoutModelCopy);
         return flow
-                .checkout(checkoutModel)
+                .createQuote(checkoutModelCopy)
                 .then(function (quote) {
                     quoteCache = quote;
                     quoteCache.cached = true;
                     return quote;
                 });
     };
+
+    self.updateQuote = function (checkoutModel) {
+
+        var checkoutModelCopy = augmentCheckoutModel(sofa.Util.clone(checkoutModel));
+
+        var flow = router.matchFlow(checkoutModelCopy);
+        return flow
+                .updateQuote(checkoutModelCopy)
+                .then(function (quote) {
+                    quoteCache = quote;
+                    quoteCache.cached = true;
+                    return quote;
+                });
+    };
+
+    var augmentCheckoutModel = function (checkoutModelCopy) {
+
+        // we alter the models here before we set them to the same instance because afterwards
+        // it's not safe anymore to alter them
+        if (checkoutModelCopy.billingAddress && checkoutModelCopy.billingAddress.country) {
+            checkoutModelCopy.billingAddress.country = checkoutModelCopy.billingAddress.country.value;
+        }
+
+        if (checkoutModelCopy.shippingAddress && checkoutModelCopy.shippingAddress.country) {
+            checkoutModelCopy.shippingAddress.country = checkoutModelCopy.shippingAddress.country.value;
+        }
+
+
+        // shipping is billing
+        if (checkoutModelCopy.addressEqual && sofa.Util.isEmpty(checkoutModelCopy.shippingAddress)) {
+            checkoutModelCopy.shippingAddress = checkoutModelCopy.billingAddress;
+        // billing is shipping
+        } else if (checkoutModelCopy.addressEqual && sofa.Util.isEmpty(checkoutModelCopy.billingAddress)) {
+            checkoutModelCopy.billingAddress = checkoutModelCopy.shippingAddress;
+        }
+
+        checkoutModelCopy.items = basketService.getItems().map(function (item) {
+            return {
+                //FIXME: get rid of hack as soon as we have the new API
+                productId: item.product.id + '',
+                quantity: item.quantity,
+                // FIXME: use as soon as Jan fixes all the things 
+                //variant: item.getVariantID() && { id: item.getVariantID() },
+                //option: item.getOptionID() && { id: item.getOptionID() }
+            };
+        });
+
+        return checkoutModelCopy;
+    }
 
     // is this likely to have different flows?
     self.getQuote = function (quoteInfo) {
@@ -290,6 +358,43 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
 'use strict';
 /* global sofa, document */
 
+sofa.define('sofa.checkout.flows.DefaultFlow', function (configService, $q, $http) {
+
+    var self = {},
+        CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint');
+
+    self.initialize = function () {
+        // This method is called before the payment method is being used
+        // It needs to guard itself if it should only be called once per session
+    };
+
+    self.createQuote = function (checkoutModel) {
+
+        return $http({
+            method: 'POST',
+            url: CHECKOUT_ENDPOINT + '/quotes',
+            data: checkoutModel
+        })
+        .then(function (data) {
+            var wrapper = {
+                quote: data.data,
+                token: data.headers('X-Auth-Token')
+            };
+
+            return wrapper;
+        });
+    };
+
+    self.updateQuote = function (checkoutModel, quote, token) {
+
+    }
+
+    return self;
+});
+
+'use strict';
+/* global sofa, document */
+
 sofa.define('sofa.checkout.flows.DummyFlow', function ($q) {
 
     var self = {};
@@ -299,13 +404,17 @@ sofa.define('sofa.checkout.flows.DummyFlow', function ($q) {
         // It needs to guard itself if it should only be called once per session
     };
 
-    self.checkout = function (checkoutModel) {
+    self.createQuote = function (checkoutModel) {
         // This may do anything it feels up to including downloading porn from random servers
         // as long as it returns a promise with a yet-to-be-defined structure
         var deferred = $q.defer();
         deferred.resolve({ token: '4711', quote: { id: 4712 } });
         return deferred.promise;
     };
+
+    self.updateQuote = function (checkoutModel, quote) {
+
+    }
 
     return self;
 });
@@ -371,7 +480,7 @@ sofa.define('sofa.checkout.FlowRouter', function () {
            return flowRoute.predicate(checkoutModel); 
         });
 
-        return flowRoute.flow;
+        return flowRoute ? flowRoute.flow : null;
     };
 
     return self;

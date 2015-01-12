@@ -21,7 +21,7 @@ sofa.define('sofa.checkout.FlowRouter', function () {
            return flowRoute.predicate(checkoutModel); 
         });
 
-        return flowRoute.flow;
+        return flowRoute ? flowRoute.flow : null;
     };
 
     return self;

@@ -10,13 +10,17 @@ sofa.define('sofa.checkout.flows.DummyFlow', function ($q) {
         // It needs to guard itself if it should only be called once per session
     };
 
-    self.checkout = function (checkoutModel) {
+    self.createQuote = function (checkoutModel) {
         // This may do anything it feels up to including downloading porn from random servers
         // as long as it returns a promise with a yet-to-be-defined structure
         var deferred = $q.defer();
         deferred.resolve({ token: '4711', quote: { id: 4712 } });
         return deferred.promise;
     };
+
+    self.updateQuote = function (checkoutModel, quote) {
+
+    }
 
     return self;
 });
