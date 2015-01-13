@@ -227,8 +227,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
         return {
             billingAddress: {},
             shippingAddress: {},
-            // payment: null,
-            // shipping: null,
+            payment: null,
+            shipping: null,
             items: []
         };
     };
