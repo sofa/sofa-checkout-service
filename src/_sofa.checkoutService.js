@@ -321,9 +321,8 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
                 //FIXME: get rid of hack as soon as we have the new API
                 productId: item.product.id + '',
                 quantity: item.quantity,
-                // FIXME: use as soon as Jan fixes all the things 
-                //variant: item.getVariantID() && { id: item.getVariantID() },
-                //option: item.getOptionID() && { id: item.getOptionID() }
+                variant: item.getVariantID() && { id: item.getVariantID() },
+                option: item.getOptionID() && { id: item.getOptionID() }
             };
         });
 
