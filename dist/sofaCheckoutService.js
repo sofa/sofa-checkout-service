@@ -1,13 +1,12 @@
 /**
- * sofa-checkout-service - v0.8.0 - 2014-12-08
+ * sofa-checkout-service - v0.8.0 - Tue Feb 17 2015 13:59:26 GMT+0100 (CET)
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
- * THIS SOFTWARE CONTAINS COMPONENTS OF THE SOFA.IO COUCHCOMMERCE SDK (WWW.SOFA.IO).
+ * THIS SOFTWARE CONTAINS COMPONENTS OF THE SOFA.IO COUCHCOMMERCE SDK (WWW.SOFA.IO)
  * IT IS PROVIDED UNDER THE LICENSE TERMS OF THE ATTACHED LICENSE.TXT.
  */
-;(function (sofa,undefined) {
-
+;(function (sofa, document, undefined) {
 'use strict';
 /* global sofa, document */
 /**
@@ -657,5 +656,4 @@ sofa.define('sofa.utils.FormatUtils', {
         return number + '';
     }
 });
-
-} (sofa));
+}(sofa, document));
