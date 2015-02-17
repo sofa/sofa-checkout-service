@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.8.0 - Tue Feb 17 2015 13:59:26 GMT+0100 (CET)
+ * sofa-checkout-service - v0.8.0 - Tue Feb 17 2015 13:59:52 GMT+0100 (CET)
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors

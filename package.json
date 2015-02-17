@@ -1,6 +1,6 @@
 {
   "name": "sofa-checkout-service",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Sofa Web SDK checkout service component.",
   "main": "dist/sofaCheckoutService.js",
   "homepage": "http://www.sofa.io",

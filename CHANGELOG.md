@@ -1,3 +1,11 @@
+## 0.8.0 (2015-02-17)
+
+
+#### Features
+
+* **sofa.CheckoutService:** new build + Angular service/module ([70d6e206](https://github.com/sofa/sofa-checkout-service/commit/70d6e206115fd9eb4d41ca28b06cb02cbeb865e6))
+
+
 <a name="0.8.0"></a>
 ## 0.8.0 (2014-12-08)
 
