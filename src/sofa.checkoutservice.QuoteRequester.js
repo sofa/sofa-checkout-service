@@ -12,7 +12,7 @@
  * The `sofa.checkoutservice.QuoteRequester` takes an `QuoteInfo` holding both the `quoteId and
  * the token and returns the order either from cache or via the backend API.
  */
-sofa.define('sofa.checkoutservice.QuoteRequester', function ($q, $http, configService, sharedState) {
+sofa.define('sofa.checkoutservice.QuoteRequester', function ($q, $http, configService, storageService, sharedState) {
 
     var CHECKOUT_ENDPOINT = configService.get('checkoutEndpoint');
 

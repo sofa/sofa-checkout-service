@@ -22,7 +22,7 @@
  * you information about used and last used payment or shipping methods. There are
  * several checkout types supported, all built behind a clean API.
  */
-sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingService, configService) {
+sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingService, configService, storageService) {
 
     var self = {};
 
@@ -36,18 +36,13 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
     var checkoutMethodsRequestConverter = new sofa.checkoutservice.CheckoutMethodsRequestConverter(sharedState),
         checkoutMethodsRequester        = new sofa.checkoutservice.CheckoutMethodsRequester($q, $http, configService, sharedState),
         checkoutRequestConverter        = new sofa.checkoutservice.CheckoutRequestConverter(sharedState),
-        checkoutRequester               = new sofa.checkoutservice.CheckoutRequester($q, $http, configService, sharedState),
+        checkoutRequester               = new sofa.checkoutservice.CheckoutRequester($q, $http, configService, storageService, sharedState),
         quoteToOrderRequester           = new sofa.checkoutservice.QuoteToOrderRequester($q, $http, configService, sharedState),
-        quoteRequester                  = new sofa.checkoutservice.QuoteRequester($q, $http, configService, sharedState),
+        quoteRequester                  = new sofa.checkoutservice.QuoteRequester($q, $http, configService, storageService, sharedState),
         orderRequester                  = new sofa.checkoutservice.OrderRequester($q, $http, configService, sharedState);
 
     //allow this service to raise events
     sofa.observable.mixin(self);
-
-    //FIXME: This is needed for the CouponService to work
-    self.createQuoteData = function () {
-        throw new Error('not implemented');
-    };
 
     // LEAVE THIS HERE UNTIL WE FINISHED PORTING ALL THE BIRTHDAY & COUPON STUFF
 
@@ -215,21 +210,25 @@ sofa.define('sofa.CheckoutService', function ($http, $q, basketService, loggingS
                 });
     };
 
-    self.checkout = function (checkoutModel) {
+    self.createQuote = function (checkoutModel) {
         var requestModel = checkoutRequestConverter(
-                            validateCheckoutModel(checkoutModel), basketService.getItems());
+            validateCheckoutModel(checkoutModel), basketService.getItems());
 
         return checkoutRequester(requestModel)
-                .then(null, function (fail) {
-                    loggingService.error([
-                        '[CheckoutService: getSupportedCheckoutMethods]',
-                        '[Request Data]',
-                        requestModel,
-                        '[Service answer]',
-                        fail
-                    ]);
-                    return $q.reject(fail);
-                });
+            .then(null, function (fail) {
+                loggingService.error([
+                    '[CheckoutService: checkout]',
+                    '[Request Data]',
+                    requestModel,
+                    '[Service answer]',
+                    fail
+                ]);
+                return $q.reject(fail);
+            });
+    }
+
+    self.checkout = function (checkoutModel) {
+        self.createQuote(checkoutModel);
     };
 
     var validateCheckoutModel = function (checkoutModel) {
