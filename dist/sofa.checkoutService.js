@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.6.0 - 2014-11-28
+ * sofa-checkout-service - v0.6.0 - 2015-03-10
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -694,6 +694,16 @@ sofa.define('sofa.utils.FormatUtils', {
             // FIXME
             vat: totals.taxTotals[0].taxAmount / 100
         };
+
+        quoteOrOrder.discounts = quoteOrOrder.discounts.map(function (coupon) {
+            return {
+                code: coupon.code,
+                amount: coupon.price * -1 / 100,
+                tax: coupon.taxPercent,
+                name: coupon.name
+            };
+        });
+
         return quoteOrOrder;
     }
 });
