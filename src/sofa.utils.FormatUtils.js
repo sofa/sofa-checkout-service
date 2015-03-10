@@ -119,6 +119,16 @@ sofa.define('sofa.utils.FormatUtils', {
             // FIXME
             vat: totals.taxTotals[0].taxAmount / 100
         };
+
+        quoteOrOrder.discounts = quoteOrOrder.discounts.map(function (coupon) {
+            return {
+                code: coupon.code,
+                amount: coupon.price * -1 / 100,
+                tax: coupon.taxPercent,
+                name: coupon.name
+            };
+        });
+
         return quoteOrOrder;
     }
 });
