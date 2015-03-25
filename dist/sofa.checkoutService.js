@@ -1,5 +1,5 @@
 /**
- * sofa-checkout-service - v0.6.0 - 2015-03-10
+ * sofa-checkout-service - v0.6.0 - 2015-03-25
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -547,6 +547,9 @@ sofa.define('sofa.checkoutservice.QuoteToOrderRequester', function ($q, $http, c
             });
         }
 
+        // We have to append the form to the document to make this work in FF
+        document.body.appendChild(form);
+
         form.submit();
     };
 
@@ -573,6 +576,7 @@ sofa.define('sofa.checkoutservice.QuoteToOrderRequester', function ($q, $http, c
         });
     };
 });
+
 'use strict';
 /* global sofa */
 /**

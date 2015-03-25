@@ -32,6 +32,9 @@ sofa.define('sofa.checkoutservice.QuoteToOrderRequester', function ($q, $http, c
             });
         }
 
+        // We have to append the form to the document to make this work in FF
+        document.body.appendChild(form);
+
         form.submit();
     };
 
